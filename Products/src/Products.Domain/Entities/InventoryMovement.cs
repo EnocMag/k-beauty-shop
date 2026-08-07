@@ -2,8 +2,9 @@
 
 namespace Products.Domain.Entities;
 
-public class InventoryMovement : BaseEntity
+public class InventoryMovement
 {
+    public Guid InventoryMovementId { get; set; }
     public int Quantity { get; set; }
     public MovementType Type { get; set; } 
     public DateTime CreatedAt { get; set; }
