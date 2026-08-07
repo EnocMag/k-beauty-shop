@@ -1,8 +1,8 @@
 ﻿namespace Products.Domain.Entities;
 
-public class InventoryReservation : BaseEntity
+public class InventoryReservation : BaseEntity<Guid>
 {
-    public int OrderId { get; set; }
+    public required int OrderId { get; set; }
     public int Quantity { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime ExpiresAt { get; set; }
