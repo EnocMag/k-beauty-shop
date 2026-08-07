@@ -13,12 +13,9 @@ builder.Services.AddCors(options =>
                       });
 });
 
-var constr = builder.Configuration.GetConnectionString("ProductsApi");
-object value = builder.Services.AddDbContext<ProductsDbContext>(options =>
-        options.UseSqlServer(constr));
+builder.Services.AddDbContext<ProductsDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-var app = builder.Build();
-app.UseCors("CORSS-APP");
 
 // Add services to the container.
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
@@ -27,6 +24,8 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
 
+var app = builder.Build();
+app.UseCors("CORSS-APP");
 
 
 // Configure the HTTP request pipeline.
