@@ -1,24 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Products.Domain.Enums;
 
-namespace Products.Domain.Entities
+namespace Products.Domain.Entities;
+
+public class InventoryMovement : BaseEntity
 {
-    public class InventoryMovement
-    {
-        public int Id { get; set; }
-        public int ProductId { get; set; }
-        public MovementType MovementType { get; set; } 
-        public DateTime CreatedAt { get; set; }
-        public string Reference { get; set; }
-    }
-
-     public enum MovementType
-    {
-        Receipt,
-        Sale,
-        Adjustment,
-        Expired,
-        Damaged
-    }
+    public int Quantity { get; set; }
+    public MovementType Type { get; set; } 
+    public DateTime CreatedAt { get; set; }
+    public string Reference { get; set; }
+    public int InventoryId { get; set; }
+    public Inventory Inventory { get; set; }
 }
