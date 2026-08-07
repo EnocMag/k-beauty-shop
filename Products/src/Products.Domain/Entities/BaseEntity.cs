@@ -1,6 +1,10 @@
 ﻿namespace Products.Domain.Entities;
 
-public abstract class BaseEntity
+public abstract class BaseEntity <TKey> where TKey : struct
 {
-    public int Id { get; set; }
+    public TKey Id { get; set; }
+}
+
+public abstract class BaseEntity : BaseEntity<int>
+{
 }
