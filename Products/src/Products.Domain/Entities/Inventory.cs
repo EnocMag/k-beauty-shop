@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Products.Domain.Entities;
 
-namespace Products.Domain.Entities
+public class Inventory : BaseEntity
 {
-    public class Inventory
-    {
-        public int Id { get; set; }
-        public int ProductId { get; set; }
-        public int TotalQuantity { get; set; }
-
-    }
+    public int ProductId { get; set; }
+    public Product Product { get; set; }
+    public int Quantity { get; set; }
+    public ICollection<InventoryMovement> Movements { get; set; } = new List<InventoryMovement>();
+    public ICollection<InventoryReservation>? Reservations { get; set; }
 }
