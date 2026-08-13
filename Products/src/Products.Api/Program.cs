@@ -26,6 +26,13 @@ builder.Services.AddControllers();
 var app = builder.Build();
 app.UseCors("CORSS-APP");
 
+using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+{
+    var context = serviceScope.ServiceProvider.GetRequiredService<ProductsDbContext>();
+    if (context.Database.GetPendingMigrations().Any())
+        context.Database.Migrate();
+}
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
