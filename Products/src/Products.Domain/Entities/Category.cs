@@ -1,6 +1,6 @@
 ﻿namespace Products.Domain.Entities;
 
-public class Category : BaseEntity
+public class Category : AuditableEntity
 {
     public required string Name { get; set; }
     public required string Description { get; set; }
