@@ -17,7 +17,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddDbContext<ProductsDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlServer(builder.Configuration.GetConnectionString("ProductsDB")));
 
 builder.Services
     .AddDomainServices()
