@@ -1,6 +1,9 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Products.Domain.Commands.Products;
 using Products.Infrastructure.DbContexts;
+using Products.Infrastructure;
+using Products.Domain;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +17,13 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddDbContext<ProductsDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlServer(builder.Configuration.GetConnectionString("ProductsDB")));
 
+builder.Services
+    .AddDomainServices()
+    .AddInfrastructureServices();
+
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<CreateProductCommand>());
 
 // Add services to the container.
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();

@@ -9,12 +9,16 @@ namespace Products.Api.Controllers;
 [ApiController]
 public abstract class BaseController(IMediator mediator, ILogger<BaseController> logger) : ControllerBase
 {
-    protected async Task<IActionResult> processCommand<T>(IRequest<Result<T>> request) where T : class
+    protected async Task<IActionResult> processCommand<T>(IRequest<Result<T>> request, CancellationToken cancellationToken) where T : class
     {
         try
         {
-            var result = await mediator.Send(request);
+            var result = await mediator.Send(request, cancellationToken);
             return StatusCode((int)result.State, result);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception e)
         {

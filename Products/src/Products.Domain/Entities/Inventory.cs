@@ -1,6 +1,6 @@
 ﻿namespace Products.Domain.Entities;
 
-public class Inventory : BaseEntity
+public class Inventory : AuditableEntity
 {
     public int ProductId { get; set; }
     public Product Product { get; set; }
