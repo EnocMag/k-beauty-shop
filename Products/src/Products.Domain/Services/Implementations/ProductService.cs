@@ -29,4 +29,16 @@ public class ProductService(IProductRepository productRepository) : IProductServ
         await productRepository.AddAsync(product, cancellationToken: cancellationToken);
         return Result<Product>.Ok("Product created successfully.", product);
     }
+
+    public async Task<Result<Product>> DeleteProductAsync(int id, CancellationToken cancellationToken)
+    {
+        var product = await productRepository.GetByIdAsync(id, cancellationToken);
+        if (product is null)
+            return Result<Product>.Fail("Product not found.");
+
+        product.IsDeleted = true;
+        product.DeletedAt = DateTime.UtcNow;
+        await productRepository.Update(product, cancellationToken: cancellationToken);
+        return Result<Product>.Ok("Product deleted successfully.");
+    }
 }

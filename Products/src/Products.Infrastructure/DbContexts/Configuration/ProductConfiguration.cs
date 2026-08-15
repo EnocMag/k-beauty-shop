@@ -18,6 +18,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.Height).IsRequired().HasColumnType("decimal(18,2)");
         builder.Property(p => p.Width).IsRequired().HasColumnType("decimal(18,2)");
         builder.Property(p => p.Length).IsRequired().HasColumnType("decimal(18,2)");
+        builder.Property(p => p.IsDeleted).IsRequired().HasDefaultValue(false);
         builder.HasOne(p => p.Inventory)
                .WithOne(i => i.Product)
                .HasForeignKey<Inventory>(i => i.ProductId)

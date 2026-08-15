@@ -10,6 +10,8 @@ public class Product : AuditableEntity
     public decimal Height { get; set; }
     public decimal Width { get; set; }
     public decimal Length { get; set; }
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
     public ICollection<Category>? Categories { get; set; }
     public Inventory? Inventory { get; set; }
 }
