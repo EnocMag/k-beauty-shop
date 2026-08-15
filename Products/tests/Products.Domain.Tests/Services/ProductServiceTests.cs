@@ -1,9 +1,9 @@
 ﻿using FakeItEasy;
 using Products.Domain.Commands.Products;
-using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
 using Products.Domain.Services.Implementations;
+using System.Net;
 
 namespace Products.Domain.Tests.Services;
 
@@ -30,7 +30,7 @@ public class ProductServiceTests
         var service = new ProductService(productRepository);
 
         // Act
-        var result = await service.CreateProductAsync(command);
+        var result = await service.CreateProductAsync(command, cancellationToken: default);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -88,7 +88,7 @@ public class ProductServiceTests
         var service = new ProductService(productRepository);
 
         // Act
-        var result = await service.CreateProductAsync(command);
+        var result = await service.CreateProductAsync(command, cancellationToken: default);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -121,7 +121,7 @@ public class ProductServiceTests
         var service = new ProductService(productRepository);
 
         // Act
-        var result = await service.CreateProductAsync(command);
+        var result = await service.CreateProductAsync(command, cancellationToken: default);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -153,9 +153,162 @@ public class ProductServiceTests
         var service = new ProductService(productRepository);
 
         // Act
-        var result = await service.CreateProductAsync(command);
+        var result = await service.CreateProductAsync(command, cancellationToken: default);
 
         // Assert
         Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task DeleteProductAsync_ShouldReturnFail_WhenProductDoesNotExist()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var saveChangesCalled = true;
+        var productId = 1;
+        var cancellationToken = CancellationToken.None;
+
+        A.CallTo(() =>
+            productRepository.GetByIdAsync(productId, cancellationToken))
+            .Returns(Task.FromResult<Product?>(null));
+
+        var service = new ProductService(productRepository);
+
+        // Act
+        var result = await service.DeleteProductAsync(productId, cancellationToken);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.IsError);
+        Assert.False(result.IsSuccess);
+
+        Assert.Equal(HttpStatusCode.BadRequest, result.State);
+        Assert.Equal("Product not found.", result.Message);
+
+        Assert.NotNull(result.Errors);
+        Assert.Contains("Product not found.", result.Errors);
+
+        A.CallTo(() =>
+            productRepository.Update(
+                A<Product>._,
+                saveChangesCalled,
+                cancellationToken: cancellationToken))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task DeleteProductAsync_ShouldSoftDeleteProduct_WhenProductExists()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var productId = 1;
+        var cancellationToken = CancellationToken.None;
+
+        var product = new Product
+        {
+            Id = productId,
+            Name = "Product",
+            Sku = "SKU-001",
+            IsDeleted = false,
+            DeletedAt = null,
+        };
+
+        A.CallTo(() =>
+            productRepository.GetByIdAsync(productId, cancellationToken))
+            .Returns(Task.FromResult<Product?>(product));
+
+        var service = new ProductService(productRepository);
+
+        // Act
+        var result = await service.DeleteProductAsync(
+            productId,
+            cancellationToken);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.IsSuccess);
+        Assert.False(result.IsError);
+
+        Assert.Equal(HttpStatusCode.OK, result.State);
+        Assert.Equal(
+            "Product deleted successfully.",
+            result.Message);
+
+        Assert.Null(result.Data);
+
+        Assert.True(product.IsDeleted);
+        Assert.NotNull(product.DeletedAt);
+    }
+
+    [Fact]
+    public async Task DeleteProductAsync_ShouldUpdateSameProduct_WhenProductExists()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var saveChangesCalled = true;
+        var productId = 1;
+        var cancellationToken = CancellationToken.None;
+
+        var product = new Product
+        {
+            Id = productId,
+            Name = "Product",
+            Sku = "SKU-001",
+            IsDeleted = false,
+            DeletedAt = null
+        };
+
+        A.CallTo(() =>
+            productRepository.GetByIdAsync(productId, cancellationToken))
+            .Returns(Task.FromResult<Product?>(product));
+
+        var service = new ProductService(productRepository);
+
+        // Act
+        var result = await service.DeleteProductAsync(
+            productId,
+            cancellationToken);
+
+        // Assert
+        A.CallTo(() =>
+            productRepository.Update(
+                product,
+                saveChangesCalled,
+                cancellationToken: cancellationToken))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteProductAsync_ShouldSetDeletedAtToUtcNow_WhenProductExists()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var productId = 1;
+        var cancellationToken = CancellationToken.None;
+
+        var product = new Product
+        {
+            Id = productId,
+            Name = "Product",
+            Sku = "SKU-001",
+            IsDeleted = false,
+            DeletedAt = null
+        };
+
+        A.CallTo(() =>
+            productRepository.GetByIdAsync(productId, cancellationToken))
+            .Returns(Task.FromResult<Product?>(product));
+
+        var before = DateTime.UtcNow;
+        var service = new ProductService(productRepository);
+
+        // Act
+        await service.DeleteProductAsync(productId, cancellationToken);
+
+        var after = DateTime.UtcNow;
+
+        // Assert
+        Assert.NotNull(product.DeletedAt);
+        Assert.InRange(product.DeletedAt.Value, before, after);
     }
 }

@@ -2,12 +2,14 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Products.Api.Controllers;
 using Products.Domain.Commands.Products;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using System.Net;
+using System.Windows.Input;
 
 namespace Products.Api.Tests.Controlles;
 
@@ -59,7 +61,7 @@ public class ProductControllerTests
             .Returns(expectedResult);
 
         // Act
-        var result = await _controller.CreateProduct(command);
+        var result = await _controller.CreateProduct(command, cancellationToken : default);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -110,7 +112,7 @@ public class ProductControllerTests
             .Returns(expectedResult);
 
         // Act
-        var result = await _controller.CreateProduct(command);
+        var result = await _controller.CreateProduct(command, cancellationToken : default);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -151,10 +153,10 @@ public class ProductControllerTests
         A.CallTo(() => _mediator.Send(
                 command,
                 A<CancellationToken>._))
-            .Throws(new Exception("Database error"));
+                .Throws(new Exception("Database error"));
 
         // Act
-        var result = await _controller.CreateProduct(command);
+        var result = await _controller.CreateProduct(command, cancellationToken : default);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -178,5 +180,146 @@ public class ProductControllerTests
             response.Errors);
 
         Assert.Null(response.Data);
+    }
+    [Fact]
+    public async Task DeleteProduct_ShouldReturnOk_WhenCommandSucceeds()
+    {
+        // Arrange
+        var productId = 1;
+
+        var expectedResult = Result<Product>.Ok(
+            "Product deleted successfully.",
+            new Product
+            {
+                Id = productId,
+                Name = "Laptop",
+                Sku = "LAP-001",
+                Price = 1500m
+            });
+
+        A.CallTo(() => _mediator.Send(
+                A<DeletedProductCommand>.That.Matches(x => x.Id == productId),
+                A<CancellationToken>._))
+            .Returns(expectedResult);
+
+        // Act
+        var result = await _controller.DeleteProduct(
+            productId,
+            cancellationToken: default);
+
+        // Assert
+        var objectResult = Assert.IsType<ObjectResult>(result);
+
+        Assert.Equal(
+            StatusCodes.Status200OK,
+            objectResult.StatusCode);
+
+        var response = Assert.IsType<Result<Product>>(
+            objectResult.Value);
+
+        Assert.True(response.IsSuccess);
+        Assert.Equal(
+            "Product deleted successfully.",
+            response.Message);
+
+        Assert.NotNull(response.Data);
+        Assert.Equal(productId, response.Data.Id);
+
+        A.CallTo(() => _mediator.Send(
+                A<DeletedProductCommand>.That.Matches(x => x.Id == productId),
+                A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteProduct_ShouldReturnNotFound_WhenProductDoesNotExist()
+    {
+        // Arrange
+        var productId = 999;
+
+        var expectedResult = Result<Product>.Fail(
+            "Product not found.",
+            HttpStatusCode.NotFound);
+
+        A.CallTo(() => _mediator.Send(
+                A<DeletedProductCommand>.That.Matches(x => x.Id == productId),
+                A<CancellationToken>._))
+            .Returns(expectedResult);
+
+        // Act
+        var result = await _controller.DeleteProduct(
+            productId,
+            cancellationToken: default);
+
+        // Assert
+        var objectResult = Assert.IsType<ObjectResult>(result);
+
+        Assert.Equal(
+            StatusCodes.Status404NotFound,
+            objectResult.StatusCode);
+
+        var response = Assert.IsType<Result<Product>>(
+            objectResult.Value);
+
+        Assert.True(response.IsError);
+        Assert.False(response.IsSuccess);
+
+        Assert.Equal(
+            "Product not found.",
+            response.Message);
+
+        Assert.Contains(
+            "Product not found.",
+            response.Errors);
+
+        A.CallTo(() => _mediator.Send(
+                A<DeletedProductCommand>.That.Matches(x => x.Id == productId),
+                A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteProduct_ShouldReturnInternalServerError_WhenMediatorThrowsException()
+    {
+        // Arrange
+        var productId = 1;
+
+        A.CallTo(() => _mediator.Send(
+                A<DeletedProductCommand>.That.Matches(x => x.Id == productId),
+                A<CancellationToken>._))
+            .Throws(new Exception("Database error"));
+
+        // Act
+        var result = await _controller.DeleteProduct(
+            productId,
+            cancellationToken: default);
+
+        // Assert
+        var objectResult = Assert.IsType<ObjectResult>(result);
+
+        Assert.Equal(
+            StatusCodes.Status500InternalServerError,
+            objectResult.StatusCode);
+
+        var response = Assert.IsType<Result<Product>>(
+            objectResult.Value);
+
+        Assert.True(response.IsError);
+        Assert.False(response.IsSuccess);
+
+        Assert.Equal(
+            "An error occurred while processing the request.",
+            response.Message);
+
+        Assert.Contains(
+            "An error occurred while processing the request.",
+            response.Errors);
+
+        Assert.Null(response.Data);
+
+        A.CallTo(() => _mediator.Send(
+                A<DeletedProductCommand>.That.Matches(x => x.Id == productId),
+                A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
     }
 }
