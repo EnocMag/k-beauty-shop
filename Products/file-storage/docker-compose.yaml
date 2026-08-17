@@ -1,0 +1,43 @@
+services:
+  # 1. On-the-Fly Image Processing (Resizes, converts to WebP/AVIF)
+  imgproxy:
+    image: darthsim/imgproxy:latest
+    container_name: catalog_imgproxy
+    restart: always
+    environment:
+      IMGPROXY_LOCAL_FILESYSTEM_ROOT: "/local_images"
+      # Automatically output WebP or AVIF if the browser supports it
+      IMGPROXY_ENABLE_WEBP_DETECTION: "true"
+      IMGPROXY_ENABLE_AVIF_DETECTION: "true"
+    volumes:
+      # Mount raw catalog images as read-only into imgproxy
+      - ./catalog_images:/local_images:ro
+
+  # 2. Web Server & Edge Cache
+  nginx:
+    image: nginx:alpine
+    container_name: catalog_nginx
+    restart: always
+    ports:
+      - "3712:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./catalog_images:/usr/share/nginx/html/raw:ro
+      - nginx_cache:/var/cache/nginx
+    depends_on:
+      - imgproxy
+
+  # 3. SFTP Server
+  sftp:
+    image: atmoz/sftp:alpine
+    container_name: catalog_sftp
+    restart: always
+    ports:
+      - "2222:22"
+    # user:pass:uid
+    command: "FtpProductCatalogManager:xv43%17FWq@:1001"
+    volumes:
+      - ./catalog_images:/home/uploaduser/upload
+
+volumes:
+  nginx_cache:
