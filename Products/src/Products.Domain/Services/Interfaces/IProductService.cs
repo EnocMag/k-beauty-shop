@@ -7,4 +7,5 @@ namespace Products.Domain.Services.Interfaces;
 public interface IProductService
 {
     Task<Result<Product>> CreateProductAsync(CreateProductCommand input, CancellationToken cancellationToken);
+    Task<Result<Product>> DeleteProductAsync(int id, CancellationToken cancellationToken);
 }

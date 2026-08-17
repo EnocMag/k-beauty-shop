@@ -9,4 +9,8 @@ public class ProductController(IMediator mediator, ILogger<ProductController> lo
     [HttpPost]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand input, CancellationToken cancellationToken) =>
         await processCommand(input, cancellationToken);
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteProduct(int id, CancellationToken cancellationToken) =>
+        await processCommand(new DeleteProductCommand { Id = id }, cancellationToken);
 }

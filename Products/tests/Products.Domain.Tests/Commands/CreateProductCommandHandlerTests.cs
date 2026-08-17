@@ -37,7 +37,7 @@ public class CreateProductCommandHandlerTests
             product);
 
         A.CallTo(() =>
-                productService.CreateProductAsync(command))
+                productService.CreateProductAsync(command, cancellationToken: default))
             .Returns(expectedResult);
 
         var handler = new CreateProductCommandHandler(productService);
@@ -63,7 +63,7 @@ public class CreateProductCommandHandlerTests
         Assert.Equal("LAP-001", result.Data.Sku);
 
         A.CallTo(() =>
-                productService.CreateProductAsync(command))
+                productService.CreateProductAsync(command, cancellationToken: default))
             .MustHaveHappenedOnceExactly();
     }
 }

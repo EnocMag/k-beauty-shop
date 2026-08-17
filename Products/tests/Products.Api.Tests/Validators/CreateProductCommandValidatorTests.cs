@@ -13,7 +13,9 @@ public class CreateProductCommandValidatorTests
     {
         var productRepository = A.Fake<IProductRepository>();
 
-        A.CallTo(() => productRepository.ExistsBySkuAsync(A<string>._))
+        A.CallTo(() => productRepository.ExistsBySkuAsync(
+            A<string>._,
+            A<CancellationToken>._))
             .Returns(false);
 
         _validator = new CreateProductCommandValidator(productRepository);
