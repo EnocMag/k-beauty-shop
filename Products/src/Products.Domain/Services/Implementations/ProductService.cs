@@ -3,6 +3,7 @@ using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
 using Products.Domain.Services.Interfaces;
+using System.Net;
 
 namespace Products.Domain.Services.Implementations;
 
@@ -33,8 +34,8 @@ public class ProductService(IProductRepository productRepository) : IProductServ
     public async Task<Result<Product>> DeleteProductAsync(int id, CancellationToken cancellationToken)
     {
         var product = await productRepository.GetByIdAsync(id, cancellationToken);
-        if (product is null)
-            return Result<Product>.Fail("Product not found.");
+        if (product == null || product.IsDeleted == true)
+            return Result<Product>.Fail("Product not found.", HttpStatusCode.NotFound);
 
         product.IsDeleted = true;
         product.DeletedAt = DateTime.UtcNow;

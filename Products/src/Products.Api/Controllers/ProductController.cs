@@ -12,5 +12,5 @@ public class ProductController(IMediator mediator, ILogger<ProductController> lo
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct(int id, CancellationToken cancellationToken) =>
-        await processCommand(new DeletedProductCommand { Id = id }, cancellationToken);
+        await processCommand(new DeleteProductCommand { Id = id }, cancellationToken);
 }

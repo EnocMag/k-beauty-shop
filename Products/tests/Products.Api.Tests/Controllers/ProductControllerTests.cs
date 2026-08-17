@@ -198,7 +198,7 @@ public class ProductControllerTests
             });
 
         A.CallTo(() => _mediator.Send(
-                A<DeletedProductCommand>.That.Matches(x => x.Id == productId),
+                A<DeleteProductCommand>.That.Matches(x => x.Id == productId),
                 A<CancellationToken>._))
             .Returns(expectedResult);
 
@@ -226,7 +226,7 @@ public class ProductControllerTests
         Assert.Equal(productId, response.Data.Id);
 
         A.CallTo(() => _mediator.Send(
-                A<DeletedProductCommand>.That.Matches(x => x.Id == productId),
+                A<DeleteProductCommand>.That.Matches(x => x.Id == productId),
                 A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
@@ -242,7 +242,7 @@ public class ProductControllerTests
             HttpStatusCode.NotFound);
 
         A.CallTo(() => _mediator.Send(
-                A<DeletedProductCommand>.That.Matches(x => x.Id == productId),
+                A<DeleteProductCommand>.That.Matches(x => x.Id == productId),
                 A<CancellationToken>._))
             .Returns(expectedResult);
 
@@ -273,7 +273,7 @@ public class ProductControllerTests
             response.Errors);
 
         A.CallTo(() => _mediator.Send(
-                A<DeletedProductCommand>.That.Matches(x => x.Id == productId),
+                A<DeleteProductCommand>.That.Matches(x => x.Id == productId),
                 A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
@@ -285,7 +285,7 @@ public class ProductControllerTests
         var productId = 1;
 
         A.CallTo(() => _mediator.Send(
-                A<DeletedProductCommand>.That.Matches(x => x.Id == productId),
+                A<DeleteProductCommand>.That.Matches(x => x.Id == productId),
                 A<CancellationToken>._))
             .Throws(new Exception("Database error"));
 
@@ -318,7 +318,7 @@ public class ProductControllerTests
         Assert.Null(response.Data);
 
         A.CallTo(() => _mediator.Send(
-                A<DeletedProductCommand>.That.Matches(x => x.Id == productId),
+                A<DeleteProductCommand>.That.Matches(x => x.Id == productId),
                 A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
