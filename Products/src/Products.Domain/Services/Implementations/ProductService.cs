@@ -34,7 +34,7 @@ public class ProductService(IProductRepository productRepository) : IProductServ
     public async Task<Result<Product>> DeleteProductAsync(int id, CancellationToken cancellationToken)
     {
         var product = await productRepository.GetByIdAsync(id, cancellationToken);
-        if (product == null || product.IsDeleted == true)
+        if (product == null || product.IsDeleted)
             return Result<Product>.Fail("Product not found.", HttpStatusCode.NotFound);
 
         product.IsDeleted = true;
