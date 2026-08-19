@@ -4,6 +4,7 @@ using Products.Domain.Commands.Products;
 using Products.Infrastructure.DbContexts;
 using Products.Infrastructure;
 using Products.Domain;
+using Products.Api.Behaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,10 @@ builder.Services
     .AddDomainServices()
     .AddInfrastructureServices();
 
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<CreateProductCommand>());
+builder.Services.AddMediatR(cfg => {
+    cfg.RegisterServicesFromAssemblyContaining<CreateProductCommand>();
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
 
 // Add services to the container.
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
