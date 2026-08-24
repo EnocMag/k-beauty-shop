@@ -1,0 +1,34 @@
+name: Products CI
+
+on:
+  push:
+    paths:
+      - 'Products/**'
+      - '.github/workflows/products.yml'
+  pull_request:
+    paths:
+      - 'Products/**'
+      - '.github/workflows/products.yml'
+
+jobs:
+  test-and-build:
+    name: Test and Build Products
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Products/Products.slnx
+
+      - name: Build solution
+        run: dotnet build Products/Products.slnx --configuration Release --no-restore
+      
+      - name: Run tests
+        run: dotnet test Products/Products.slnx --configuration Release --no-build
