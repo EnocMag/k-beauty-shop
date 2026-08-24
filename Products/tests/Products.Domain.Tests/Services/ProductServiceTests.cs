@@ -37,7 +37,7 @@ public class ProductServiceTests
         Assert.False(result.IsError);
 
         Assert.Equal(
-            "Product created successfully.",
+            "Modify to test github action 'build and test'",
             result.Message);
 
         Assert.Equal(
