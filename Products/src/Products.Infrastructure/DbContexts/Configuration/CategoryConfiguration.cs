@@ -11,7 +11,8 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Name)
             .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(100)
+            .UseCollation("SQL_Latin1_General_CP1_CI_AS");
         builder.Property(c => c.Description)
             .HasMaxLength(500);
         builder.HasOne(c => c.ParentCategory)
