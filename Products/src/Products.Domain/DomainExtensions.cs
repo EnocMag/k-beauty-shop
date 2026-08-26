@@ -10,6 +10,7 @@ public static class DomainExtensions
     {
         // Add domain services here
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<ICategoryService, CategoryService>();
 
         return services;
     }

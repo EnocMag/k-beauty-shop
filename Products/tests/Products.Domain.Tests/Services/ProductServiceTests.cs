@@ -1,4 +1,4 @@
-﻿using FakeItEasy;
+using FakeItEasy;
 using Products.Domain.Commands.Products;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
@@ -182,7 +182,7 @@ public class ProductServiceTests
         Assert.True(result.IsError);
         Assert.False(result.IsSuccess);
 
-        Assert.Equal(HttpStatusCode.BadRequest, result.State);
+        Assert.Equal(HttpStatusCode.NotFound, result.State);
         Assert.Equal("Product not found.", result.Message);
 
         Assert.NotNull(result.Errors);
