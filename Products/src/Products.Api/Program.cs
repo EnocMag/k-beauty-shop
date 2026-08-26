@@ -1,14 +1,9 @@
-using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Products.Domain;
 using Products.Domain.Commands.Products;
-using Products.Domain.Services.Implementations;
-using Products.Domain.Services.Interfaces;
 using Products.Infrastructure;
 using Products.Infrastructure.DbContexts;
-using Products.Infrastructure;
-using Products.Domain;
 using Products.Api.Behaviors;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,8 +17,6 @@ builder.Services.AddCors(options =>
                       });
 });
 
-builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddDbContext<ProductsDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("ProductsDB")));
 
