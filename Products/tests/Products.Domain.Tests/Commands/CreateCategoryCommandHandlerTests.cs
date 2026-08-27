@@ -1,49 +1,45 @@
-using System.Threading;
-using System.Threading.Tasks;
 using FakeItEasy;
 using Products.Domain.Commands.Categorys;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Services.Interfaces;
-using Xunit;
 
-namespace Products.Domain.Tests.Commands
+namespace Products.Domain.Tests.Commands;
+
+public class CreateCategoryCommandHandlerTests
 {
-    public class CreateCategoryCommandHandlerTests
+    private readonly ICategoryService _categoryService;
+    private readonly CreateCategoryCommandHandler _handler;
+
+    public CreateCategoryCommandHandlerTests()
     {
-        private readonly ICategoryService _categoryService;
-        private readonly CreateCategoryCommandHandler _handler;
+        _categoryService = A.Fake<ICategoryService>();
+        _handler = new CreateCategoryCommandHandler(_categoryService);
+    }
 
-        public CreateCategoryCommandHandlerTests()
+    [Fact]
+    public async Task Handle_ShouldCallCategoryServiceAndReturnResult()
+    {
+        // Arrange
+        var command = new CreateCategoryCommand
         {
-            _categoryService = A.Fake<ICategoryService>();
-            _handler = new CreateCategoryCommandHandler(_categoryService);
-        }
+            Name = "Test Category",
+            Description = "Description",
+            ParentCategoryId = null
+        };
+        var cancellationToken = CancellationToken.None;
 
-        [Fact]
-        public async Task Handle_ShouldCallCategoryServiceAndReturnResult()
-        {
-            // Arrange
-            var command = new CreateCategoryCommand
-            {
-                Name = "Test Category",
-                Description = "Description",
-                ParentCategoryId = null
-            };
-            var cancellationToken = CancellationToken.None;
+        var expectedResult = Result<Category>.Ok("Success", new Category { Name = "Test Category" });
 
-            var expectedResult = Result<Category>.Ok("Success", new Category { Name = "Test Category" });
-            
-            A.CallTo(() => _categoryService.CreateCategoryAsync(command, cancellationToken))
-                .Returns(Task.FromResult(expectedResult));
+        A.CallTo(() => _categoryService.CreateCategoryAsync(command, cancellationToken))
+            .Returns(Task.FromResult(expectedResult));
 
-            // Act
-            var result = await _handler.Handle(command, cancellationToken);
+        // Act
+        var result = await _handler.Handle(command, cancellationToken);
 
-            // Assert
-            Assert.Same(expectedResult, result);
-            A.CallTo(() => _categoryService.CreateCategoryAsync(command, cancellationToken))
-                .MustHaveHappenedOnceExactly();
-        }
+        // Assert
+        Assert.Same(expectedResult, result);
+        A.CallTo(() => _categoryService.CreateCategoryAsync(command, cancellationToken))
+            .MustHaveHappenedOnceExactly();
     }
 }

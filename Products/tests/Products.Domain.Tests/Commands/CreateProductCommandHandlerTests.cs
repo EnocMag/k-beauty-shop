@@ -1,4 +1,4 @@
-﻿using FakeItEasy;
+using FakeItEasy;
 using Products.Domain.Commands.Products;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;

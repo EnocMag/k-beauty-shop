@@ -1,8 +1,8 @@
-﻿using FluentValidation;
+using System.Net;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Products.Domain.DTOs;
-using System.Net;
 
 [Route("api/[controller]")]
 [ApiController]
