@@ -1,4 +1,5 @@
-﻿using Products.Domain.Commands.Products;
+using System.Net;
+using Products.Domain.Commands.Products;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
