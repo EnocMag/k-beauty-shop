@@ -1,10 +1,10 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Products.Api.Behaviors;
 using Products.Domain;
 using Products.Domain.Commands.Products;
 using Products.Infrastructure;
 using Products.Infrastructure.DbContexts;
-using Products.Api.Behaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +24,8 @@ builder.Services
     .AddDomainServices()
     .AddInfrastructureServices();
 
-builder.Services.AddMediatR(cfg => {
+builder.Services.AddMediatR(cfg =>
+{
     cfg.RegisterServicesFromAssemblyContaining<CreateProductCommand>();
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });

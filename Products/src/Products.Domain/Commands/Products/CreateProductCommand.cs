@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Services.Interfaces;
