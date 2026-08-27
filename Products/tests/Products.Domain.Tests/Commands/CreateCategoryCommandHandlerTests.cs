@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FakeItEasy;
-using Products.Domain.Commands.Categorys;
+using Products.Domain.Commands.Categories;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Services.Interfaces;
@@ -26,13 +26,13 @@ namespace Products.Domain.Tests.Commands
             // Arrange
             var command = new CreateCategoryCommand
             {
-                Name = "Test Category",
+                Name = "Test Categories",
                 Description = "Description",
                 ParentCategoryId = null
             };
             var cancellationToken = CancellationToken.None;
 
-            var expectedResult = Result<Category>.Ok("Success", new Category { Name = "Test Category" });
+            var expectedResult = Result<Category>.Ok("Success", new Category { Name = "Test Categories" });
             
             A.CallTo(() => _categoryService.CreateCategoryAsync(command, cancellationToken))
                 .Returns(Task.FromResult(expectedResult));
