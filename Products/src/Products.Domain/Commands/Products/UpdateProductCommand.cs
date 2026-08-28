@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Services.Interfaces;
@@ -10,14 +10,15 @@ public class UpdateProductCommand : IRequest<Result<Product>>
 {
     public static readonly HashSet<string> ValidFields = new(StringComparer.OrdinalIgnoreCase)
     {
-        "name",
-        "price",
-        "description",
-        "weight",
-        "height",
-        "width",
-        "length"
+        nameof(Product.Name),
+        nameof(Product.Description),
+        nameof(Product.Price),
+        nameof(Product.Weight),
+        nameof(Product.Height),
+        nameof(Product.Width),
+        nameof(Product.Length),
     };
+
     [JsonIgnore]
     public int Id { get; set; }
 
