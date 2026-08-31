@@ -37,9 +37,9 @@ public class CreateCategoryCommandValidatorTests
     [Fact]
     public async Task Should_HaveError_When_NameExceedsMaxLength()
     {
-        var command = new CreateCategoryCommand { Name = new string('A', 151) };
+        var command = new CreateCategoryCommand { Name = new string('A', 101) };
         var result = await _validator.TestValidateAsync(command);
-        result.ShouldHaveValidationErrorFor(x => x.Name).WithErrorMessage("Name cannot exceed 150 characters.");
+        result.ShouldHaveValidationErrorFor(x => x.Name).WithErrorMessage("Name cannot exceed 100 characters.");
     }
 
     [Fact]
