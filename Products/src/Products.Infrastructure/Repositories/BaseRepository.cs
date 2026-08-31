@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
 using Products.Infrastructure.DbContexts;

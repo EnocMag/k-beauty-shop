@@ -1,9 +1,9 @@
-﻿using Products.Domain.Commands.Products;
+using System.Net;
+using Products.Domain.Commands.Products;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
 using Products.Domain.Services.Interfaces;
-using System.Net;
 
 namespace Products.Domain.Services.Implementations;
 

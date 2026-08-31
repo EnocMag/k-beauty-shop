@@ -1,11 +1,11 @@
-﻿namespace Products.Domain.Repositories;
+namespace Products.Domain.Repositories;
 
 public interface IBaseRepository<TEntity, TKey>
     where TEntity : class
     where TKey : struct
 {
     Task AddAsync(
-        TEntity obj, 
+        TEntity obj,
         bool saveChanges = true,
         CancellationToken cancellationToken = default);
     Task Update(
@@ -19,7 +19,7 @@ public interface IBaseRepository<TEntity, TKey>
     Task<IEnumerable<TEntity>> GetAllAsync(
         CancellationToken cancellationToken = default);
     Task<TEntity?> GetByIdAsync(
-        TKey id, 
+        TKey id,
         CancellationToken cancellationToken = default);
     Task SaveChangesAsync(
         CancellationToken cancellationToken);
@@ -28,5 +28,5 @@ public interface IBaseRepository<TEntity, TKey>
 public interface IBaseRepository<TEntity> : IBaseRepository<TEntity, int>
     where TEntity : class
 {
-    
+
 }

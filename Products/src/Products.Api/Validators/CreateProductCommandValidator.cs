@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Products.Domain.Commands.Products;
 using Products.Domain.Repositories;
 
@@ -6,9 +6,9 @@ namespace Products.Api.Validators;
 
 public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
 {
-    private const int MaxNameLength = 150;
-    private const int MaxSkuLength = 50;
-    private const int MaxDescriptionLength = 500;
+    private const int _maxNameLength = 150;
+    private const int _maxSkuLength = 50;
+    private const int _maxDescriptionLength = 500;
     public CreateProductCommandValidator(IProductRepository productRepository)
     {
         RuleFor(x => x.Name)
@@ -16,16 +16,16 @@ public class CreateProductCommandValidator : AbstractValidator<CreateProductComm
             .WithMessage("Name is required.")
             .Must(name => !string.IsNullOrWhiteSpace(name))
             .WithMessage("Name cannot contain only whitespace.")
-            .Must(name => name.Trim().Length <= MaxNameLength)
-            .WithMessage($"Name cannot exceed {MaxNameLength} characters.");
+            .Must(name => name.Trim().Length <= _maxNameLength)
+            .WithMessage($"Name cannot exceed {_maxNameLength} characters.");
 
         RuleFor(x => x.Sku)
             .NotEmpty()
             .WithMessage("SKU is required.")
             .Must(sku => !string.IsNullOrWhiteSpace(sku))
             .WithMessage("SKU cannot contain only whitespace.")
-            .Must(sku => sku.Trim().Length <= MaxSkuLength)
-            .WithMessage($"SKU cannot exceed {MaxSkuLength} characters.")
+            .Must(sku => sku.Trim().Length <= _maxSkuLength)
+            .WithMessage($"SKU cannot exceed {_maxSkuLength} characters.")
             .MustAsync(async (sku, cancellationToken) =>
             {
                 var normalizedSku = sku.Trim().ToUpperInvariant();
@@ -57,7 +57,7 @@ public class CreateProductCommandValidator : AbstractValidator<CreateProductComm
             .WithMessage("Length must be greater than 0.");
 
         RuleFor(x => x.Description)
-            .MaximumLength(MaxDescriptionLength)
-            .WithMessage($"Description cannot exceed {MaxDescriptionLength} characters.");
+            .MaximumLength(_maxDescriptionLength)
+            .WithMessage($"Description cannot exceed {_maxDescriptionLength} characters.");
     }
 }
