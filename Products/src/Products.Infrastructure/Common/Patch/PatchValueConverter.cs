@@ -5,14 +5,24 @@ namespace Products.Infrastructure.Common.Patch;
 
 public static class PatchValueConverter
 {
+    /// <summary>
+    /// Converts a raw value to the specified target type, handling null values, JSON elements, strings and GUIDs
+    /// </summary>
+    /// <param name="rawValue"></param>
+    /// <param name="targetType"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public static object? Convert(object? rawValue, Type targetType)
     {
         var underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
         if (rawValue == null)
         {
-            if (targetType.IsValueType && underlyingType == null)
-                throw new InvalidOperationException($"Cannot convert null to non-nullable type {targetType.Name}.");
+            if (targetType.IsValueType && Nullable.GetUnderlyingType(targetType) == null)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot convert null to non-nullable type {targetType.Name}.");
+            }
             return null;
         }
 
@@ -23,6 +33,8 @@ public static class PatchValueConverter
 
         if (underlyingType == typeof(string))
         {
+            // Normalizes whitespace by replacing one or more consecutive whitespace characters
+            // (spaces, tabs, line breaks, etc.) with a single space.
             return Regex.Replace(
                 rawValue?.ToString()?.Trim() ?? string.Empty,
                 @"\s+",
@@ -31,12 +43,6 @@ public static class PatchValueConverter
 
         if (underlyingType == typeof(Guid))
             return Guid.Parse(rawValue.ToString()!);
-
-        if (underlyingType.IsEnum)
-            return Enum.Parse(
-                underlyingType,
-                rawValue.ToString()!,
-                ignoreCase: true);
 
         return System.Convert.ChangeType(
             rawValue,
