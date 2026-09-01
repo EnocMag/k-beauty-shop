@@ -42,4 +42,16 @@ public class ProductService(IProductRepository productRepository) : IProductServ
         await productRepository.Update(product, cancellationToken: cancellationToken);
         return Result<Product>.Ok("Product deleted successfully.");
     }
+
+    public async Task<Result<Product>> UpdateProductAsync(UpdateProductCommand input, CancellationToken cancellationToken)
+    {
+        var product = await productRepository.PatchAsync(input.Id, input.UpdatedFields, cancellationToken);
+
+        if (product == null)
+            return Result<Product>.Fail("Product not found.", HttpStatusCode.NotFound);
+
+        await productRepository.SaveChangesAsync(cancellationToken);
+
+        return Result<Product>.Ok("Product updated successfully.", product);
+    }
 }

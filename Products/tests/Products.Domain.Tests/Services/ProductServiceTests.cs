@@ -4,6 +4,7 @@ using Products.Domain.Commands.Products;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
 using Products.Domain.Services.Implementations;
+using System.Text.Json;
 
 namespace Products.Domain.Tests.Services;
 
@@ -183,6 +184,7 @@ public class ProductServiceTests
         Assert.False(result.IsSuccess);
 
         Assert.Equal(HttpStatusCode.NotFound, result.State);
+        Assert.Equal(HttpStatusCode.NotFound, result.State);
         Assert.Equal("Product not found.", result.Message);
 
         Assert.NotNull(result.Errors);
@@ -310,5 +312,246 @@ public class ProductServiceTests
         // Assert
         Assert.NotNull(product.DeletedAt);
         Assert.InRange(product.DeletedAt.Value, before, after);
+    }
+    [Fact]
+    public async Task UpdateProductAsync_ShouldReturnNotFound_WhenProductDoesNotExist()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var cancellationToken = CancellationToken.None;
+
+        var command = new UpdateProductCommand
+        {
+            Id = 1
+        };
+
+        command.UpdatedFields.Add(
+            nameof(Product.Name),
+            JsonDocument.Parse("\"Updated Product\"").RootElement);
+
+        A.CallTo(() =>
+                productRepository.PatchAsync(
+                    command.Id,
+                    command.UpdatedFields,
+                    cancellationToken))
+            .Returns(Task.FromResult<Product?>(null));
+
+        var service = new ProductService(productRepository);
+
+        // Act
+        var result = await service.UpdateProductAsync(
+            command,
+            cancellationToken);
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.True(result.IsError);
+        Assert.False(result.IsSuccess);
+
+        Assert.Equal(
+            HttpStatusCode.NotFound,
+            result.State);
+
+        Assert.Equal(
+            "Product not found.",
+            result.Message);
+
+        Assert.Null(result.Data);
+
+        A.CallTo(() =>
+                productRepository.PatchAsync(
+                    command.Id,
+                    command.UpdatedFields,
+                    cancellationToken))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() =>
+                productRepository.SaveChangesAsync(cancellationToken))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task UpdateProductAsync_ShouldUpdateProductSuccessfully_WhenProductExists()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var cancellationToken = CancellationToken.None;
+
+        var command = new UpdateProductCommand
+        {
+            Id = 1
+        };
+
+        command.UpdatedFields.Add(
+            nameof(Product.Name),
+            JsonDocument.Parse("\"Updated Product\"").RootElement);
+
+        command.UpdatedFields.Add(
+            nameof(Product.Price),
+            JsonDocument.Parse("150.75").RootElement);
+
+        command.UpdatedFields.Add(
+            nameof(Product.Description),
+            JsonDocument.Parse("\"Updated description\"").RootElement);
+
+        var product = new Product
+        {
+            Id = 1,
+            Name = "Updated Product",
+            Sku = "SKU-001",
+            Price = 150.75m,
+            Description = "Updated description",
+            Weight = 2.5m,
+            Height = 10m,
+            Width = 20m,
+            Length = 30m,
+            IsDeleted = false
+        };
+
+        A.CallTo(() =>
+                productRepository.PatchAsync(
+                    command.Id,
+                    command.UpdatedFields,
+                    cancellationToken))
+            .Returns(Task.FromResult<Product?>(product));
+
+        var service = new ProductService(productRepository);
+
+        // Act
+        var result = await service.UpdateProductAsync(
+            command,
+            cancellationToken);
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.True(result.IsSuccess);
+        Assert.False(result.IsError);
+
+        Assert.Equal(
+            HttpStatusCode.OK,
+            result.State);
+
+        Assert.Equal(
+            "Product updated successfully.",
+            result.Message);
+
+        Assert.NotNull(result.Data);
+
+        Assert.Same(
+            product,
+            result.Data);
+
+        Assert.Equal(
+            "Updated Product",
+            result.Data.Name);
+
+        Assert.Equal(
+            150.75m,
+            result.Data.Price);
+
+        Assert.Equal(
+            "Updated description",
+            result.Data.Description);
+
+        A.CallTo(() =>
+                productRepository.PatchAsync(
+                    command.Id,
+                    command.UpdatedFields,
+                    cancellationToken))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() =>
+                productRepository.SaveChangesAsync(cancellationToken))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UpdateProductAsync_ShouldCallPatchAsyncWithCorrectParameters()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var cancellationToken = CancellationToken.None;
+
+        var command = new UpdateProductCommand
+        {
+            Id = 10
+        };
+
+        command.UpdatedFields.Add(
+            nameof(Product.Name),
+            JsonDocument.Parse("\"New Product Name\"").RootElement);
+
+        command.UpdatedFields.Add(
+            nameof(Product.Price),
+            JsonDocument.Parse("200.50").RootElement);
+
+        var product = new Product
+        {
+            Id = 10,
+            Name = "New Product Name",
+            Sku = "SKU-010",
+            Price = 200.50m,
+            IsDeleted = false
+        };
+
+        A.CallTo(() =>
+                productRepository.PatchAsync(
+                    command.Id,
+                    command.UpdatedFields,
+                    cancellationToken))
+            .Returns(Task.FromResult<Product?>(product));
+
+        var service = new ProductService(productRepository);
+
+        // Act
+        await service.UpdateProductAsync(
+            command,
+            cancellationToken);
+
+        // Assert
+        A.CallTo(() =>
+                productRepository.PatchAsync(
+                    command.Id,
+                    command.UpdatedFields,
+                    cancellationToken))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UpdateProductAsync_ShouldNotSaveChanges_WhenPatchReturnsNull()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var cancellationToken = CancellationToken.None;
+
+        var command = new UpdateProductCommand
+        {
+            Id = 999
+        };
+
+        command.UpdatedFields.Add(
+            nameof(Product.Name),
+            JsonDocument.Parse("\"Updated Product\"").RootElement);
+
+        A.CallTo(() =>
+                productRepository.PatchAsync(
+                    command.Id,
+                    command.UpdatedFields,
+                    cancellationToken))
+            .Returns(Task.FromResult<Product?>(null));
+
+        var service = new ProductService(productRepository);
+
+        // Act
+        await service.UpdateProductAsync(
+            command,
+            cancellationToken);
+
+        // Assert
+        A.CallTo(() =>
+                productRepository.SaveChangesAsync(cancellationToken))
+            .MustNotHaveHappened();
     }
 }
