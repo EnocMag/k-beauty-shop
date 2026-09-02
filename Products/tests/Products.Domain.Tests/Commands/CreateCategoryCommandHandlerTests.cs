@@ -29,30 +29,17 @@ public class CreateCategoryCommandHandlerTests
         };
         var cancellationToken = CancellationToken.None;
 
-        [Fact]
-        public async Task Handle_ShouldCallCategoryServiceAndReturnResult()
-        {
-            // Arrange
-            var command = new CreateCategoryCommand
-            {
-                Name = "Test Categories",
-                Description = "Description",
-                ParentCategoryId = null
-            };
-            var cancellationToken = CancellationToken.None;
+        var expectedResult = Result<Category>.Ok("Success", new Category { Name = "Test Category" });
 
-            var expectedResult = Result<Category>.Ok("Success", new Category { Name = "Test Categories" });
-            
-            A.CallTo(() => _categoryService.CreateCategoryAsync(command, cancellationToken))
-                .Returns(Task.FromResult(expectedResult));
+        A.CallTo(() => _categoryService.CreateCategoryAsync(command, cancellationToken))
+            .Returns(Task.FromResult(expectedResult));
 
-            // Act
-            var result = await _handler.Handle(command, cancellationToken);
+        // Act
+        var result = await _handler.Handle(command, cancellationToken);
 
-            // Assert
-            Assert.Same(expectedResult, result);
-            A.CallTo(() => _categoryService.CreateCategoryAsync(command, cancellationToken))
-                .MustHaveHappenedOnceExactly();
-        }
+        // Assert
+        Assert.Same(expectedResult, result);
+        A.CallTo(() => _categoryService.CreateCategoryAsync(command, cancellationToken))
+            .MustHaveHappenedOnceExactly();
     }
 }
