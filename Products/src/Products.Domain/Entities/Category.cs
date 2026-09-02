@@ -1,5 +1,3 @@
-﻿using System.Security.Cryptography.X509Certificates;
-
 namespace Products.Domain.Entities;
 
 public class Category : AuditableEntity
