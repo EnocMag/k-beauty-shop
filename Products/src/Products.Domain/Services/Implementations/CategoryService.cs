@@ -45,7 +45,6 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             return Result<Category>.Fail("Cannot delete category with associated child categories.", HttpStatusCode.BadRequest);
         }
 
-
         await categoryRepository.Delete(category, cancellationToken: cancellationToken);
         return Result<Category>.Ok("Category deleted successfully.", category);
     }
