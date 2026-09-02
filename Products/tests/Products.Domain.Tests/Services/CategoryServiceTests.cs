@@ -37,7 +37,7 @@ public class CategoryServiceTests
 
         // Assert
         Assert.True(result.IsSuccess); 
-        Assert.Equal("Categories created successfully.", result.Message);
+        Assert.Equal("Category created successfully.", result.Message);
         Assert.NotNull(result.Data);
         Assert.Equal("Skincare", result.Data.Name);
         Assert.Equal(command.Description, result.Data.Description);
@@ -62,7 +62,7 @@ public class CategoryServiceTests
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Equal("Categories not found.", result.Message);
+        Assert.Equal("Category not found.", result.Message);
         Assert.Equal(System.Net.HttpStatusCode.NotFound, result.State);
     }
 
@@ -123,10 +123,10 @@ public class CategoryServiceTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal("Categories deleted successfully.", result.Message);
+        Assert.Equal("Category deleted successfully.", result.Message);
         Assert.Equal(category, result.Data);
 
-        A.CallTo(() => _categoryRepository.DeleteCategoryAsync(1, cancellationToken))
+        A.CallTo(() => _categoryRepository.Delete(category, true, cancellationToken))
             .MustHaveHappenedOnceExactly();
     }
 }
