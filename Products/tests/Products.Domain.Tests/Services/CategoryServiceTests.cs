@@ -33,7 +33,7 @@ public class CategoryServiceTests
         var result = await _categoryService.CreateCategoryAsync(command, cancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess); 
+        Assert.True(result.IsSuccess);
         Assert.Equal("Category created successfully.", result.Message);
         Assert.NotNull(result.Data);
         Assert.Equal("Skincare", result.Data.Name);
@@ -68,11 +68,11 @@ public class CategoryServiceTests
     {
         // Arrange
         var cancellationToken = CancellationToken.None;
-        var category = new Category 
-        { 
-            Id = 1, 
+        var category = new Category
+        {
+            Id = 1,
             Name = "Skincare",
-            Products = new System.Collections.Generic.List<Product> { new Product { Name = "Cream", Sku = "SKU001" } } 
+            Products = new System.Collections.Generic.List<Product> { new Product { Name = "Cream", Sku = "SKU001" } }
         };
         A.CallTo(() => _categoryRepository.GetByIdAsync(1, cancellationToken)).Returns(Task.FromResult<Category?>(category));
 
@@ -90,11 +90,11 @@ public class CategoryServiceTests
     {
         // Arrange
         var cancellationToken = CancellationToken.None;
-        var category = new Category 
-        { 
-            Id = 1, 
+        var category = new Category
+        {
+            Id = 1,
             Name = "Skincare",
-            ChildCategories = new System.Collections.Generic.List<Category> { new Category { Name = "Face" } } 
+            ChildCategories = new System.Collections.Generic.List<Category> { new Category { Name = "Face" } }
         };
         A.CallTo(() => _categoryRepository.GetByIdAsync(1, cancellationToken)).Returns(Task.FromResult<Category?>(category));
 
