@@ -1,15 +1,13 @@
-﻿using FakeItEasy;
+using System.Net;
+using FakeItEasy;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Products.Api.Controllers;
 using Products.Domain.Commands.Products;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;
-using System.Net;
-using System.Windows.Input;
 
 namespace Products.Api.Tests.Controlles;
 
@@ -61,7 +59,7 @@ public class ProductControllerTests
             .Returns(expectedResult);
 
         // Act
-        var result = await _controller.CreateProduct(command, cancellationToken : default);
+        var result = await _controller.CreateProduct(command, cancellationToken: default);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -112,7 +110,7 @@ public class ProductControllerTests
             .Returns(expectedResult);
 
         // Act
-        var result = await _controller.CreateProduct(command, cancellationToken : default);
+        var result = await _controller.CreateProduct(command, cancellationToken: default);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -156,7 +154,7 @@ public class ProductControllerTests
                 .Throws(new Exception("Database error"));
 
         // Act
-        var result = await _controller.CreateProduct(command, cancellationToken : default);
+        var result = await _controller.CreateProduct(command, cancellationToken: default);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);

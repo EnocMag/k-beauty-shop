@@ -1,24 +1,33 @@
-using System.Threading;
-using System.Threading.Tasks;
 using FakeItEasy;
 using Products.Domain.Commands.Categories;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Services.Interfaces;
-using Xunit;
 
-namespace Products.Domain.Tests.Commands
+namespace Products.Domain.Tests.Commands;
+
+public class CreateCategoryCommandHandlerTests
 {
-    public class CreateCategoryCommandHandlerTests
-    {
-        private readonly ICategoryService _categoryService;
-        private readonly CreateCategoryCommandHandler _handler;
+    private readonly ICategoryService _categoryService;
+    private readonly CreateCategoryCommandHandler _handler;
 
-        public CreateCategoryCommandHandlerTests()
+    public CreateCategoryCommandHandlerTests()
+    {
+        _categoryService = A.Fake<ICategoryService>();
+        _handler = new CreateCategoryCommandHandler(_categoryService);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldCallCategoryServiceAndReturnResult()
+    {
+        // Arrange
+        var command = new CreateCategoryCommand
         {
-            _categoryService = A.Fake<ICategoryService>();
-            _handler = new CreateCategoryCommandHandler(_categoryService);
-        }
+            Name = "Test Category",
+            Description = "Description",
+            ParentCategoryId = null
+        };
+        var cancellationToken = CancellationToken.None;
 
         [Fact]
         public async Task Handle_ShouldCallCategoryServiceAndReturnResult()

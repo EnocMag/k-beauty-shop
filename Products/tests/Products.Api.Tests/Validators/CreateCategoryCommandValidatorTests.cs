@@ -1,12 +1,9 @@
-using System.Threading;
-using System.Threading.Tasks;
 using FakeItEasy;
 using FluentValidation.TestHelper;
 using Products.Api.Validators;
 using Products.Domain.Commands.Categories;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
-using Xunit;
 
 namespace Products.Api.Tests.Validators;
 
@@ -49,7 +46,7 @@ public class CreateCategoryCommandValidatorTests
     public async Task Should_HaveError_When_NameAlreadyExists()
     {
         var command = new CreateCategoryCommand { Name = "ExistingCategory" };
-        
+
         A.CallTo(() => _categoryRepository.ExistNameCategoryAsync(command.Name, A<CancellationToken>._))
             .Returns(Task.FromResult<Category>(new Category { Name = "ExistingCategory" }));
 
@@ -60,12 +57,12 @@ public class CreateCategoryCommandValidatorTests
     [Fact]
     public async Task Should_HaveError_When_DescriptionExceedsMaxLength()
     {
-        var command = new CreateCategoryCommand 
-        { 
-            Name = "ValidName", 
-            Description = new string('A', 501) 
+        var command = new CreateCategoryCommand
+        {
+            Name = "ValidName",
+            Description = new string('A', 501)
         };
-        
+
         var result = await _validator.TestValidateAsync(command);
         result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage("Description cannot exceed 500 characters.");
     }
@@ -73,8 +70,8 @@ public class CreateCategoryCommandValidatorTests
     [Fact]
     public async Task Should_HaveError_When_ParentCategoryDoesNotExist()
     {
-        var command = new CreateCategoryCommand 
-        { 
+        var command = new CreateCategoryCommand
+        {
             Name = "ValidName",
             ParentCategoryId = 99
         };
@@ -89,8 +86,8 @@ public class CreateCategoryCommandValidatorTests
     [Fact]
     public async Task Should_NotHaveError_When_CommandIsValid()
     {
-        var command = new CreateCategoryCommand 
-        { 
+        var command = new CreateCategoryCommand
+        {
             Name = "NewCategory",
             Description = "A valid description",
             ParentCategoryId = 1

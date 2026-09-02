@@ -1,6 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
@@ -13,7 +10,7 @@ public class CategoryRepository(ProductsDbContext context) : BaseRepository<Cate
     public async Task<Category> ExistNameCategoryAsync(string name, CancellationToken cancellationToken)
     {
         return await context.Categories
-            .FirstOrDefaultAsync( x => x.Name == name,cancellationToken);
+            .FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
     }
 
     public async Task<bool> ExistCategoryById(int categoryId, CancellationToken cancellationToken)

@@ -1,11 +1,8 @@
-using System.Threading;
-using System.Threading.Tasks;
 using FakeItEasy;
 using Products.Domain.Commands.Categories;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
 using Products.Domain.Services.Implementations;
-using Xunit;
 
 namespace Products.Domain.Tests.Services;
 
@@ -43,9 +40,9 @@ public class CategoryServiceTests
         Assert.Equal(command.Description, result.Data.Description);
         Assert.Equal(command.ParentCategoryId, result.Data.ParentCategoryId);
 
-        A.CallTo(() => _categoryRepository.AddAsync(A<Category>.That.Matches(c => 
-            c.Name == "Skincare" && 
-            c.Description == "All about skincare" && 
+        A.CallTo(() => _categoryRepository.AddAsync(A<Category>.That.Matches(c =>
+            c.Name == "Skincare" &&
+            c.Description == "All about skincare" &&
             c.ParentCategoryId == 1), A<bool>._, cancellationToken))
             .MustHaveHappenedOnceExactly();
     }
