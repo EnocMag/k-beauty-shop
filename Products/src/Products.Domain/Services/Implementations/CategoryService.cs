@@ -1,8 +1,12 @@
-using Products.Domain.Commands.Categorys;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using Products.Domain.Commands.Categories;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
 using Products.Domain.Services.Interfaces;
+using System.Net;
 
 namespace Products.Domain.Services.Implementations;
 
@@ -21,5 +25,27 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         };
         await categoryRepository.AddAsync(category, cancellationToken: cancellationToken);
         return Result<Category>.Ok("Category created successfully.", category);
+    }
+
+    public async Task<Result<Category>> DeleteCategoryAsync(int id, CancellationToken cancellationToken)
+    {
+        var category = await categoryRepository.GetByIdAsync(id, cancellationToken);
+        if (category == null)
+        {
+            return Result<Category>.Fail("Category not found.", HttpStatusCode.NotFound);
+        }
+
+        if (category.Products?.Count > 0)
+        {
+            return Result<Category>.Fail("Cannot delete category with associated products.", HttpStatusCode.BadRequest);
+        }
+
+        if (category.ChildCategories?.Count > 0)
+        {
+            return Result<Category>.Fail("Cannot delete category with associated child categories.", HttpStatusCode.BadRequest);
+        }
+
+        await categoryRepository.Delete(category, cancellationToken: cancellationToken);
+        return Result<Category>.Ok("Category deleted successfully.", category);
     }
 }

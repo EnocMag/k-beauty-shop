@@ -40,7 +40,7 @@ namespace Products.Infrastructure.Migrations
                     b.ToTable("CategoryProduct");
                 });
 
-            modelBuilder.Entity("Products.Domain.Entities.Category", b =>
+            modelBuilder.Entity("Products.Domain.Entities.Categories", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -237,7 +237,7 @@ namespace Products.Infrastructure.Migrations
 
             modelBuilder.Entity("CategoryProduct", b =>
                 {
-                    b.HasOne("Products.Domain.Entities.Category", null)
+                    b.HasOne("Products.Domain.Entities.Categories", null)
                         .WithMany()
                         .HasForeignKey("CategoriesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -250,9 +250,9 @@ namespace Products.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Products.Domain.Entities.Category", b =>
+            modelBuilder.Entity("Products.Domain.Entities.Categories", b =>
                 {
-                    b.HasOne("Products.Domain.Entities.Category", "ParentCategory")
+                    b.HasOne("Products.Domain.Entities.Categories", "ParentCategory")
                         .WithMany("ChildCategories")
                         .HasForeignKey("ParentCategoryId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -293,7 +293,7 @@ namespace Products.Infrastructure.Migrations
                     b.Navigation("Inventory");
                 });
 
-            modelBuilder.Entity("Products.Domain.Entities.Category", b =>
+            modelBuilder.Entity("Products.Domain.Entities.Categories", b =>
                 {
                     b.Navigation("ChildCategories");
                 });

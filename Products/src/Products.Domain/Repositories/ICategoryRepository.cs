@@ -11,4 +11,5 @@ public interface ICategoryRepository : IBaseRepository<Category>
     Task<bool> ExistCategoryById(
      int categoryId,
      CancellationToken cancellationToken);
+
 }
