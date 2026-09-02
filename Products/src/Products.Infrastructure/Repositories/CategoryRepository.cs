@@ -22,14 +22,4 @@ public class CategoryRepository(ProductsDbContext context) : BaseRepository<Cate
             .AnyAsync(c => c.ParentCategoryId == categoryId, cancellationToken);
     }
 
-    public async Task<bool> DeleteCategoryAsync(int categoryId, CancellationToken cancellationToken)
-    {
-        var category = await context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId, cancellationToken);
-        if (category == null)
-            return false;
-
-        context.Categories.Remove(category);
-        await context.SaveChangesAsync(cancellationToken);
-        return true;
-    }
 }

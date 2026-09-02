@@ -15,7 +15,4 @@ public interface ICategoryRepository : IBaseRepository<Category>
      int categoryId,
      CancellationToken cancellationToken);
 
-    Task<bool> DeleteCategoryAsync(
-     int categoryId,
-     CancellationToken cancellationToken);
 }
