@@ -29,7 +29,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
 
     public async Task<Result<Category>> DeleteCategoryAsync(int id, CancellationToken cancellationToken)
     {
-        var category = await categoryRepository.CategoryWhitDetails(id, cancellationToken);
+        var category = await categoryRepository.CategoryWithDetails(id, cancellationToken);
         if (category == null)
         {
             return Result<Category>.Fail("Category not found.", HttpStatusCode.NotFound);
