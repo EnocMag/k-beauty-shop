@@ -52,7 +52,7 @@ public class CategoryServiceTests
     {
         // Arrange
         var cancellationToken = CancellationToken.None;
-        A.CallTo(() => _categoryRepository.GetByIdAsync(1, cancellationToken)).Returns(Task.FromResult<Category?>(null));
+        A.CallTo(() => _categoryRepository.GetCategoryWithDetails(1, cancellationToken)).Returns(Task.FromResult<Category?>(null));
 
         // Act
         var result = await _categoryService.DeleteCategoryAsync(1, cancellationToken);
@@ -74,7 +74,7 @@ public class CategoryServiceTests
             Name = "Skincare",
             Products = new System.Collections.Generic.List<Product> { new Product { Name = "Cream", Sku = "SKU001" } }
         };
-        A.CallTo(() => _categoryRepository.GetByIdAsync(1, cancellationToken)).Returns(Task.FromResult<Category?>(category));
+        A.CallTo(() => _categoryRepository.GetCategoryWithDetails(1, cancellationToken)).Returns(Task.FromResult<Category?>(category));
 
         // Act
         var result = await _categoryService.DeleteCategoryAsync(1, cancellationToken);
@@ -96,7 +96,7 @@ public class CategoryServiceTests
             Name = "Skincare",
             ChildCategories = new System.Collections.Generic.List<Category> { new Category { Name = "Face" } }
         };
-        A.CallTo(() => _categoryRepository.GetByIdAsync(1, cancellationToken)).Returns(Task.FromResult<Category?>(category));
+        A.CallTo(() => _categoryRepository.GetCategoryWithDetails(1, cancellationToken)).Returns(Task.FromResult<Category?>(category));
 
         // Act
         var result = await _categoryService.DeleteCategoryAsync(1, cancellationToken);
@@ -113,7 +113,7 @@ public class CategoryServiceTests
         // Arrange
         var cancellationToken = CancellationToken.None;
         var category = new Category { Id = 1, Name = "Skincare" };
-        A.CallTo(() => _categoryRepository.GetByIdAsync(1, cancellationToken)).Returns(Task.FromResult<Category?>(category));
+        A.CallTo(() => _categoryRepository.GetCategoryWithDetails(1, cancellationToken)).Returns(Task.FromResult<Category?>(category));
 
         // Act
         var result = await _categoryService.DeleteCategoryAsync(1, cancellationToken);
