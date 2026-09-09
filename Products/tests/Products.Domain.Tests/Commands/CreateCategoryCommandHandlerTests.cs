@@ -1,5 +1,5 @@
 using FakeItEasy;
-using Products.Domain.Commands.Categorys;
+using Products.Domain.Commands.Categories;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Services.Interfaces;

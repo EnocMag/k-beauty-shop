@@ -1,4 +1,8 @@
-using Products.Domain.Commands.Categorys;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Products.Domain.Commands.Categories;
+using Products.Domain.Commands.Products;
 using Products.Domain.DTOs;
 using Products.Domain.Entities;
 
@@ -7,4 +11,5 @@ namespace Products.Domain.Services.Interfaces;
 public interface ICategoryService
 {
     Task<Result<Category>> CreateCategoryAsync(CreateCategoryCommand input, CancellationToken cancellationToken);
+    Task<Result<Category>> DeleteCategoryAsync(int id, CancellationToken cancellationToken);
 }

@@ -1,7 +1,7 @@
 using FakeItEasy;
 using FluentValidation.TestHelper;
 using Products.Api.Validators;
-using Products.Domain.Commands.Categorys;
+using Products.Domain.Commands.Categories;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
 

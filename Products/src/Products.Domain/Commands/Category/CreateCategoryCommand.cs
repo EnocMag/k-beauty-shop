@@ -3,7 +3,7 @@ using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Services.Interfaces;
 
-namespace Products.Domain.Commands.Categorys;
+namespace Products.Domain.Commands.Categories;
 
 public class CreateCategoryCommand : IRequest<Result<Category>>
 {

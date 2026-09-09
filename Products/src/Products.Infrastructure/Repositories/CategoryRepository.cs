@@ -18,4 +18,12 @@ public class CategoryRepository(ProductsDbContext context) : BaseRepository<Cate
         return await context.Categories
             .AnyAsync(c => c.ParentCategoryId == categoryId, cancellationToken);
     }
+
+    public async Task<Category?> GetCategoryWithDetails(int id, CancellationToken cancellationToken)
+    {
+        return await context.Categories
+            .Include(c => c.Products)
+            .Include(c => c.ChildCategories)
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+    }
 }

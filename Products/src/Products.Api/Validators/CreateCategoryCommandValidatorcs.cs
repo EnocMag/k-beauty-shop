@@ -1,6 +1,6 @@
 using System.Data;
 using FluentValidation;
-using Products.Domain.Commands.Categorys;
+using Products.Domain.Commands.Categories;
 using Products.Domain.Repositories;
 
 namespace Products.Api.Validators;
