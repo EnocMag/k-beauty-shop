@@ -12,4 +12,8 @@ public interface ICategoryRepository : IBaseRepository<Category>
      int categoryId,
      CancellationToken cancellationToken);
 
+    Task<Category?> CategoryWhitDetails(
+        int id,
+        CancellationToken cancellationToken);
+
 }

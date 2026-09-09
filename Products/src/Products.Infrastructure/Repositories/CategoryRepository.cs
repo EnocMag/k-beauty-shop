@@ -16,9 +16,14 @@ public class CategoryRepository(ProductsDbContext context) : BaseRepository<Cate
     public async Task<bool> ExistCategoryById(int categoryId, CancellationToken cancellationToken)
     {
         return await context.Categories
-            .Include(c => c.ChildCategories)
-            .Include(c => c.Products)
             .AnyAsync(c => c.ParentCategoryId == categoryId, cancellationToken);
     }
 
+    public async Task<Category?> CategoryWhitDetails(int id, CancellationToken cancellationToken)
+    {
+        return await context.Categories
+            .Include(c => c.Products)
+            .Include(c => c.ChildCategories)
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+    }
 }
