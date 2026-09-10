@@ -15,4 +15,7 @@ public interface ICategoryRepository : IBaseRepository<Category>
     Task<Category?> GetCategoryWithDetails(
         int id,
         CancellationToken cancellationToken);
+
+    Task<IEnumerable<Category>> GetAllCategories(
+        CancellationToken cancellationToken);
 }
