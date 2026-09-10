@@ -26,4 +26,10 @@ public class CategoryRepository(ProductsDbContext context) : BaseRepository<Cate
             .Include(c => c.ChildCategories)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
+    public async Task<IEnumerable<Category>> GetAllCategories(CancellationToken cancellationToken)
+    {
+        return await context.Categories
+            .Include(c => c.ParentCategory)
+            .ToListAsync(cancellationToken);
+    }
 }
