@@ -1,6 +1,7 @@
 using MediatR;
 using Products.Domain.DTOs;
 using Products.Domain.Repositories;
+using System.Net;
 
 namespace Products.Domain.Commands.Categories;
 
