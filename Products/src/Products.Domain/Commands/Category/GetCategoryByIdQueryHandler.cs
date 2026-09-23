@@ -4,6 +4,10 @@ using Products.Domain.Repositories;
 
 namespace Products.Domain.Commands.Categories;
 
+public class GetCategoryByIdQuery : IRequest<Result<CategoryDto>>
+{
+    public int CategoryId { get; set; }
+}
 public class GetCategoryByIdQueryHandler(ICategoryRepository categoryRepository) : IRequestHandler<GetCategoryByIdQuery, Result<CategoryDto>>
 {
     public async Task<Result<CategoryDto>> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
@@ -11,7 +15,7 @@ public class GetCategoryByIdQueryHandler(ICategoryRepository categoryRepository)
         var category = await categoryRepository.GetByIdAsync(request.CategoryId, cancellationToken);
         if (category == null)
         {
-            return Result<CategoryDto>.Fail("Category not found.", System.Net.HttpStatusCode.NotFound);
+            return Result<CategoryDto>.Fail("Category not found.", HttpStatusCode.NotFound);
         }
 
         var categoryDto = new CategoryDto

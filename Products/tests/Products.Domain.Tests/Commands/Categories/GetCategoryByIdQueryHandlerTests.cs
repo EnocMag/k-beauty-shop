@@ -2,6 +2,7 @@ using FakeItEasy;
 using Products.Domain.Commands.Categories;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
+using System.Net;
 
 namespace Products.Domain.Tests.Commands.Categories;
 
@@ -30,7 +31,7 @@ public class GetCategoryByIdQueryHandlerTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal("Category not found.", result.Message);
-        Assert.Equal(System.Net.HttpStatusCode.NotFound, result.State);
+        Assert.Equal(HttpStatusCode.NotFound, result.State);
     }
 
     [Fact]

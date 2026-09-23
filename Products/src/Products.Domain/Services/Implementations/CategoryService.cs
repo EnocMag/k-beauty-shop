@@ -49,7 +49,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         return Result<Category>.Ok("Category deleted successfully.", category);
     }
 
-    public async Task<Result<Category>> GetAllCategory(CancellationToken cancellationToken)
+    public async Task<Result<Category>> GetAllCategories(CancellationToken cancellationToken)
     {
         var categories = await categoryRepository.GetAllCategories(cancellationToken);
         return Result<Category>.Ok("Categories retrieved successfully.");

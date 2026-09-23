@@ -1,15 +1,18 @@
 using MediatR;
 using Products.Domain.DTOs;
 using Products.Domain.Repositories;
+using System.Net;
 
 namespace Products.Domain.Commands.Categories;
 
+public class GetAllCategoriesQuery : IRequest<Result<IEnumerable<CategoryDto>>>
+{
+}
 public class GetAllCategoriesQueryHandler(ICategoryRepository categoryRepository) : IRequestHandler<GetAllCategoriesQuery, Result<IEnumerable<CategoryDto>>>
 {
     public async Task<Result<IEnumerable<CategoryDto>>> Handle(GetAllCategoriesQuery request, CancellationToken cancellationToken)
     {
         var categories = await categoryRepository.GetAllAsync(cancellationToken);
-        
         var categoryDtos = categories.Select(category => new CategoryDto
         {
             Id = category.Id,
