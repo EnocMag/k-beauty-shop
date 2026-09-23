@@ -3,6 +3,7 @@ using Products.Domain.Commands.Categories;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
 using Products.Domain.Services.Implementations;
+using System.Net;
 
 namespace Products.Domain.Tests.Services;
 
@@ -60,7 +61,7 @@ public class CategoryServiceTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal("Category not found.", result.Message);
-        Assert.Equal(System.Net.HttpStatusCode.NotFound, result.State);
+        Assert.Equal(HttpStatusCode.NotFound, result.State);
     }
 
     [Fact]
@@ -82,7 +83,7 @@ public class CategoryServiceTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal("Cannot delete category with associated products.", result.Message);
-        Assert.Equal(System.Net.HttpStatusCode.BadRequest, result.State);
+        Assert.Equal(HttpStatusCode.BadRequest, result.State);
     }
 
     [Fact]
@@ -104,7 +105,7 @@ public class CategoryServiceTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal("Cannot delete category with associated child categories.", result.Message);
-        Assert.Equal(System.Net.HttpStatusCode.BadRequest, result.State);
+        Assert.Equal(HttpStatusCode.BadRequest, result.State);
     }
 
     [Fact]

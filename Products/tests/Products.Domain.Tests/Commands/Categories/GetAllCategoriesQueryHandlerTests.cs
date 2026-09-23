@@ -2,6 +2,7 @@ using FakeItEasy;
 using Products.Domain.Commands.Categories;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
+using System.Net;
 
 namespace Products.Domain.Tests.Commands.Categories;
 
@@ -35,15 +36,15 @@ public class GetAllCategoriesQueryHandlerTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal("Categories retrieved successfully.", result.Message);
-        Assert.Equal(System.Net.HttpStatusCode.OK, result.State);
+        Assert.Equal(HttpStatusCode.OK, result.State);
         Assert.NotNull(result.Data);
-        
+
         var dtos = result.Data.ToList();
         Assert.Equal(2, dtos.Count);
-        
+
         Assert.Equal(1, dtos[0].Id);
         Assert.Equal("Skincare", dtos[0].Name);
-        
+
         Assert.Equal(2, dtos[1].Id);
         Assert.Equal("Makeup", dtos[1].Name);
         Assert.Equal(1, dtos[1].ParentCategoryId);

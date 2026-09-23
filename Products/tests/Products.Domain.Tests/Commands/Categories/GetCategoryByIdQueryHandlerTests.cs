@@ -49,7 +49,7 @@ public class GetCategoryByIdQueryHandlerTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal("Category retrieved successfully.", result.Message);
-        Assert.Equal(System.Net.HttpStatusCode.OK, result.State);
+        Assert.Equal(HttpStatusCode.OK, result.State);
         Assert.NotNull(result.Data);
         Assert.Equal(1, result.Data.Id);
         Assert.Equal("Skincare", result.Data.Name);
