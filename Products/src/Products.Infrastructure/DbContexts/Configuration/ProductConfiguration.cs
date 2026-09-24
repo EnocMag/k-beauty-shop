@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Products.Domain.Entities;
 
@@ -25,6 +25,17 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                .OnDelete(DeleteBehavior.Cascade);
         builder.HasMany(p => p.Categories)
                .WithMany(c => c.Products);
-
+        builder.OwnsMany(
+             p => p.ProductImages,
+             productImage =>
+             {
+                 productImage.ToJson();
+                 productImage.Property(i => i.SortOrder)
+                             .IsRequired();
+                 productImage.Property(i => i.StorageKey)
+                             .IsRequired();
+                 productImage.Property(i => i.ContentType)
+                             .IsRequired();
+             });
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Products.Domain.Entities;
+using Products.Domain.ValueObjects;
+
+namespace Products.Domain.Entities;
 
 public class Product : AuditableEntity
 {
@@ -11,6 +13,7 @@ public class Product : AuditableEntity
     public decimal Width { get; set; }
     public decimal Length { get; set; }
     public bool IsDeleted { get; set; } = false;
+    public List<ProductImage>? ProductImages { get; set; }
     public DateTime? DeletedAt { get; set; }
     public ICollection<Category>? Categories { get; set; }
     public Inventory? Inventory { get; set; }
