@@ -25,11 +25,7 @@ public class CreateCustomerCommandHandler(
         CreateCustomerCommand command,
         CancellationToken cancellationToken)
     {
-        var existingCustomer = await context.Customers
-            .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Email == command.Email, cancellationToken);
-
-        if (existingCustomer != null)
+        if (await context.Customers.AnyAsync(c => c.Email == command.Email, cancellationToken))
         {
             logger.LogWarning("Customer creation failed: Email {Email} already exists", command.Email);
             return Result<CustomerResponse>.Fail(MsgConstants.CUSTOMER_ALREADY_EXISTS);
@@ -42,7 +38,8 @@ public class CreateCustomerCommandHandler(
             LastName = command.LastName.Trim(),
             Email = command.Email.Trim().ToLowerInvariant(),
             PhoneNumber = command.PhoneNumber.Trim(),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            Status = CustomerStatus.Active
         };
 
         context.Customers.Add(customer);

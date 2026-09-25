@@ -120,7 +120,10 @@ public class CreateCustomerCommandHandlerTests
             Id = Guid.NewGuid(),
             FirstName = "Mocked",
             LastName = "User",
-            Email = "mocked@example.com"
+            Email = "mocked@example.com",
+            PhoneNumber = "12345",
+            Status = CustomerStatus.Active,
+            CreatedAt = DateTime.UtcNow
         };
         A.CallTo(() => fakeMapper.Map<CustomerResponse>(A<Customer>._)).Returns(expectedResponse);
 
