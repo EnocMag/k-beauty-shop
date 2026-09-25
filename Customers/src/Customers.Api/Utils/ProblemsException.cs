@@ -9,7 +9,7 @@ public class ProblemsException : Exception
 {
     public string Msg { get; }
     public IEnumerable<string> Errors { get; }
-	public HttpStatusCode StatusCode { get; }
+	public HttpStatusCode? StatusCode { get; }
 
 	public ProblemsException(string msg, IEnumerable<string> errors) : base(msg)
     {
@@ -38,7 +38,7 @@ public class ProblemsExceptionHandler(IProblemDetailsService problemDetailsServi
 
         var details = new Microsoft.AspNetCore.Mvc.ProblemDetails
         {
-            Status = (int)problemsException.StatusCode,
+            Status = (int?)problemsException.StatusCode?? 400,
             Title = problemsException.Msg,
             Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1",
             Extensions = new Dictionary<string, object?>
@@ -47,7 +47,7 @@ public class ProblemsExceptionHandler(IProblemDetailsService problemDetailsServi
             }
         };
 
-        httpContext.Response.StatusCode = (int)problemsException.StatusCode;
+        httpContext.Response.StatusCode = (int?)problemsException.StatusCode ?? 400;
         return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
         {
             HttpContext = httpContext,
