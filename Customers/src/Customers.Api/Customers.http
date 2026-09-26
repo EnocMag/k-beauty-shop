@@ -1,0 +1,24 @@
+@Customers_HostAddress = http://localhost:5050
+
+### Health Check
+GET {{Customers_HostAddress}}/health
+Accept: application/json
+
+### Create Customer
+POST {{Customers_HostAddress}}/api/customers
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "jane.doe@example.com",
+  "phoneNumber": "+1-555-123-4567"
+}
+
+### Get Customer By ID (replace GUID with created ID)
+GET {{Customers_HostAddress}}/api/customers/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+### Swagger / OpenAPI Specs
+GET {{Customers_HostAddress}}/swagger/v1/swagger.json
+Accept: application/json
