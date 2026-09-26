@@ -150,4 +150,57 @@ public class CreateCustomerValidatorTests
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(CreateCustomerCommand.PhoneNumber));
     }
+
+    [Theory]
+    [InlineData("jane doe@example.com")]
+    [InlineData("jane@example")]
+    [InlineData("jane@@example.com")]
+    [InlineData("jane@example.c")]
+    public async Task Validate_WithEmailFailingRegex_ShouldFailValidation(string invalidEmail)
+    {
+        // Arrange
+        var command = new CreateCustomerCommand("Jane", "Doe", invalidEmail, "+1-555-123-4567");
+
+        // Act
+        var result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(CreateCustomerCommand.Email));
+    }
+
+    [Theory]
+    [InlineData("+1-555-123-4567")]
+    [InlineData("(555) 123-4567")]
+    [InlineData("+82 10 1234 5678")]
+    [InlineData("5551234567")]
+    public async Task Validate_WithValidPhoneNumberFormat_ShouldPassValidation(string phone)
+    {
+        // Arrange
+        var command = new CreateCustomerCommand("Jane", "Doe", "jane.doe@example.com", phone);
+
+        // Act
+        var result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("abc-def-ghij")]
+    [InlineData("12345")]
+    [InlineData("555-123-4567 ext")]
+    [InlineData("+-----------")]
+    public async Task Validate_WithInvalidPhoneNumberFormat_ShouldFailValidation(string invalidPhone)
+    {
+        // Arrange
+        var command = new CreateCustomerCommand("Jane", "Doe", "jane.doe@example.com", invalidPhone);
+
+        // Act
+        var result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(CreateCustomerCommand.PhoneNumber));
+    }
 }
