@@ -22,7 +22,6 @@ public class UpdateCategoryCommand : IRequest<Result<Category>>
     [JsonIgnore]
 
     public int Id { get; set; }
-    public int ParentCategoryId { get; set; }
 
     [JsonExtensionData]
     public Dictionary<string, object> UpdatedFields { get; set; } = new(StringComparer.OrdinalIgnoreCase);
