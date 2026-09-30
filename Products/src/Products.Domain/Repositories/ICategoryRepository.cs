@@ -18,4 +18,9 @@ public interface ICategoryRepository : IBaseRepository<Category>
 
     Task<IEnumerable<Category>> GetAllCategories(
         CancellationToken cancellationToken);
+
+    Task<Category?> PatchAsync(
+        int id,
+        Dictionary<string, object> updatedFields,
+        CancellationToken cancellationToken);
 }
