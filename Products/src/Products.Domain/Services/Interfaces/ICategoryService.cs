@@ -12,5 +12,5 @@ public interface ICategoryService
 {
     Task<Result<Category>> CreateCategoryAsync(CreateCategoryCommand input, CancellationToken cancellationToken);
     Task<Result<Category>> DeleteCategoryAsync(int id, CancellationToken cancellationToken);
-    Task<Result<Category>> UpdateCategory(int id, int parentCategoryId, Dictionary<string, object> updatedFields, CancellationToken cancellationToken);
+    Task<Result<Category>> UpdateCategory(int id, Dictionary<string, object> updatedFields, CancellationToken cancellationToken);
 }

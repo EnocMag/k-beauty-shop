@@ -49,7 +49,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         return Result<Category>.Ok("Categories retrieved successfully.");
     }
 
-    public async Task<Result<Category>> UpdateCategory(int id, int parentCategoryId, Dictionary<string, object> updatedFields, CancellationToken cancellationToken)
+    public async Task<Result<Category>> UpdateCategory(int id, Dictionary<string, object> updatedFields, CancellationToken cancellationToken)
     {
         var category = await categoryRepository.PatchAsync(id, updatedFields, cancellationToken);
 

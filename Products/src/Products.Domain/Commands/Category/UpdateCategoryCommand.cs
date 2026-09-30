@@ -16,7 +16,6 @@ public class UpdateCategoryCommand : IRequest<Result<Category>>
     {
         nameof(Category.Name),
         nameof(Category.Description),
-        nameof(Category.ParentCategory),
         nameof(Category.ParentCategoryId)
     };
 
@@ -33,6 +32,6 @@ public class UpdateCategoryCommandHandler(ICategoryService categoryService) : IR
 {
     public async Task<Result<Category>> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
     {
-        return await categoryService.UpdateCategory(request.Id, request.ParentCategoryId, request.UpdatedFields, cancellationToken);
+        return await categoryService.UpdateCategory(request.Id, request.UpdatedFields, cancellationToken);
     }
 }
