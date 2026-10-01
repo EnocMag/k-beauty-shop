@@ -52,12 +52,11 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
     public async Task<Result<Category>> UpdateCategory(int id, Dictionary<string, object> updatedFields, CancellationToken cancellationToken)
     {
         var category = await categoryRepository.PatchAsync(id, updatedFields, cancellationToken);
+        var nameExists = await categoryRepository.ExistNameCategoryAsync(category.Name, cancellationToken);
 
         if (category == null)
             return Result<Category>.Fail("Category not found.",
                 HttpStatusCode.NotFound);
-
-        var nameExists = await categoryRepository.ExistNameCategoryAsync(category.Name, cancellationToken);
 
         if (category.Name != null &&
             category.Name.Trim() == string.Empty)
