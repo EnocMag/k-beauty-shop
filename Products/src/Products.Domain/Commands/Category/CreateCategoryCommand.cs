@@ -12,10 +12,17 @@ public class CreateCategoryCommand : IRequest<Result<Category>>
     public int? ParentCategoryId { get; set; }
 }
 
-public class CreateCategoryCommandHandler(ICategoryService categoryService) : IRequestHandler<CreateCategoryCommand, Result<Category>>
+public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, Result<Category>>
 {
+    private readonly ICategoryService _categoryService;
+
+    public CreateCategoryCommandHandler(ICategoryService categoryService)
+    {
+        _categoryService = categoryService;
+    }
+
     public async Task<Result<Category>> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
     {
-        return await categoryService.CreateCategoryAsync(request, cancellationToken);
+        return await _categoryService.CreateCategoryAsync(request, cancellationToken);
     }
 }

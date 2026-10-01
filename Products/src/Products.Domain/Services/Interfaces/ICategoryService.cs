@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Products.Domain.Commands.Categories;
@@ -12,4 +12,5 @@ public interface ICategoryService
 {
     Task<Result<Category>> CreateCategoryAsync(CreateCategoryCommand input, CancellationToken cancellationToken);
     Task<Result<Category>> DeleteCategoryAsync(int id, CancellationToken cancellationToken);
+    Task<Result<Category>> UpdateCategory(int id, Dictionary<string, object> updatedFields, CancellationToken cancellationToken);
 }
