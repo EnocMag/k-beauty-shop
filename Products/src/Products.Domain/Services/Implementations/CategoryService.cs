@@ -21,7 +21,6 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Name = normalizedName,
             Description = input.Description,
             ParentCategoryId = input.ParentCategoryId
-
         };
         await categoryRepository.AddAsync(category, cancellationToken: cancellationToken);
         return Result<Category>.Ok("Category created successfully.", category);
@@ -31,19 +30,13 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
     {
         var category = await categoryRepository.GetCategoryWithDetails(id, cancellationToken);
         if (category == null)
-        {
             return Result<Category>.Fail("Category not found.", HttpStatusCode.NotFound);
-        }
 
         if (category.Products?.Count > 0)
-        {
             return Result<Category>.Fail("Cannot delete category with associated products.", HttpStatusCode.BadRequest);
-        }
 
         if (category.ChildCategories?.Count > 0)
-        {
             return Result<Category>.Fail("Cannot delete category with associated child categories.", HttpStatusCode.BadRequest);
-        }
 
         await categoryRepository.Delete(category, cancellationToken: cancellationToken);
         return Result<Category>.Ok("Category deleted successfully.", category);
@@ -53,5 +46,48 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
     {
         var categories = await categoryRepository.GetAllCategories(cancellationToken);
         return Result<Category>.Ok("Categories retrieved successfully.");
+    }
+
+    public async Task<Result<Category>> UpdateCategory(int id, Dictionary<string, object> updatedFields, CancellationToken cancellationToken)
+    {
+        var category = await categoryRepository.PatchAsync(id, updatedFields, cancellationToken);
+        if (category == null)
+            return Result<Category>.Fail("Category not found.",
+                HttpStatusCode.NotFound);
+
+        if (category.Name != null &&
+            category.Name.Trim() == string.Empty)
+            return Result<Category>.Fail("The name cannot consist solely of empty spaces.",
+               HttpStatusCode.BadRequest);
+
+        if (category.Description != null &&
+            category.Description.Trim() == string.Empty)
+            return Result<Category>.Fail("The description cannot consist solely of empty spaces.",
+               HttpStatusCode.BadRequest);
+
+        if (category.ParentCategoryId.HasValue)
+        {
+            if (category.ParentCategoryId.Value == category.Id)
+                return Result<Category>.Fail("A category cannot be its own parent.",
+                    HttpStatusCode.BadRequest);
+
+            var parentExists = await categoryRepository.ExistCategoryById(category.ParentCategoryId.Value, cancellationToken);
+            if (!parentExists)
+                return Result<Category>.Fail("The parent category does not exist.",
+                    HttpStatusCode.BadRequest);
+
+            var isChild = await categoryRepository.IsChildCategory(category.Id, category.ParentCategoryId.Value, cancellationToken);
+            if (isChild)
+                return Result<Category>.Fail("Cannot assign a child category as its parent category.",
+                    HttpStatusCode.BadRequest);
+        }
+
+        var nameExists = await categoryRepository.ExistNameCategoryAsync(category.Name, cancellationToken);
+        if (category.Name == nameExists?.Name && category.Id != nameExists.Id)
+            return Result<Category>.Fail("A category with the same name already exists.",
+                HttpStatusCode.BadRequest);
+
+        await categoryRepository.SaveChangesAsync(cancellationToken);
+        return Result<Category>.Ok("Category updated successfully.", category);
     }
 }

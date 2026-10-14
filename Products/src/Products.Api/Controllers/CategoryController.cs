@@ -23,4 +23,8 @@ public class CategoryController(IMediator mediator, ILogger<CategoryController> 
     [HttpGet]
     public async Task<IActionResult> GetAllCategories(CancellationToken cancellationToken) =>
         await processCommand(new GetAllCategoriesQuery(), cancellationToken);
+
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> UpdateCategory(int id, [FromBody] Dictionary<string, object> updatedFields, CancellationToken cancellationToken) =>
+        await processCommand(new UpdateCategoryCommand { Id = id, UpdatedFields = updatedFields }, cancellationToken);
 }

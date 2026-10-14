@@ -1,6 +1,9 @@
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Products.Domain.Commands.Categories;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
+using Products.Infrastructure.Common.Patch;
 using Products.Infrastructure.DbContexts;
 
 namespace Products.Infrastructure.Repositories;
@@ -16,7 +19,31 @@ public class CategoryRepository(ProductsDbContext context) : BaseRepository<Cate
     public async Task<bool> ExistCategoryById(int categoryId, CancellationToken cancellationToken)
     {
         return await context.Categories
-            .AnyAsync(c => c.ParentCategoryId == categoryId, cancellationToken);
+            .AnyAsync(c => c.Id == categoryId, cancellationToken);
+    }
+
+    public async Task<bool> IsChildCategory(int parentCategoryId, int childCategoryId, CancellationToken cancellationToken)
+    {
+        var currentId = (int?)childCategoryId;
+        var visited = new HashSet<int>();
+
+        while (currentId.HasValue && visited.Add(currentId.Value))
+        {
+            var parent = await context.Categories
+                .AsNoTracking()
+                .Where(c => c.Id == currentId.Value)
+                .Select(c => c.ParentCategoryId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (parent.HasValue && parent.Value == parentCategoryId)
+            {
+                return true;
+            }
+
+            currentId = parent;
+        }
+
+        return false;
     }
 
     public async Task<Category?> GetCategoryWithDetails(int id, CancellationToken cancellationToken)
@@ -31,5 +58,40 @@ public class CategoryRepository(ProductsDbContext context) : BaseRepository<Cate
         return await context.Categories
             .Include(c => c.ParentCategory)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Category?> PatchAsync(
+        int id,
+        Dictionary<string, object> updatedFields,
+        CancellationToken cancellationToken)
+    {
+        var category = await context.Categories.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        if (category == null)
+        {
+            return null;
+        }
+
+        var property = typeof(Category)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.CanWrite)
+            .ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var (key, newValue) in updatedFields)
+        {
+            if (!property.TryGetValue(key, out var prop)) continue;
+
+            if (!UpdateCategoryCommand.ValidFields.Contains(key)) continue;
+
+            var convertedValue = PatchValueConverter.Convert(
+                newValue,
+                prop.PropertyType);
+
+            prop.SetValue(category, convertedValue);
+
+            context.Entry(category).Property(prop.Name)
+                .IsModified = true;
+        }
+
+        return category;
     }
 }
