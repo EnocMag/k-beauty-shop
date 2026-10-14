@@ -158,7 +158,7 @@ public class CategoryServiceTests
         A.CallTo(() => _categoryRepository.PatchAsync(1, updatedFields, cancellationToken)).Returns(Task.FromResult<Category?>(null));
 
         // Act
-        var result = await _categoryService.UpdateCategory(1, 0, updatedFields, cancellationToken);
+        var result = await _categoryService.UpdateCategory(1, updatedFields, cancellationToken);
         
         // Assert
         Assert.False(result.IsSuccess);
@@ -176,7 +176,7 @@ public class CategoryServiceTests
         A.CallTo(() => _categoryRepository.ExistNameCategoryAsync(category.Name, cancellationToken)).Returns(Task.FromResult<Category?>(null));
 
         // Act
-        var result = await _categoryService.UpdateCategory(1, 2, updatedFields, cancellationToken);
+        var result = await _categoryService.UpdateCategory(1, updatedFields, cancellationToken);
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -195,11 +195,11 @@ public class CategoryServiceTests
         A.CallTo(() => _categoryRepository.ExistNameCategoryAsync(category.Name, cancellationToken)).Returns(Task.FromResult<Category?>(null));
 
         // Act
-        var result = await _categoryService.UpdateCategory(1, 2, updatedFields, cancellationToken);
+        var result = await _categoryService.UpdateCategory(1, updatedFields, cancellationToken);
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Equal("The description cannot consist solely of empty spaces..", result.Message);
+        Assert.Equal("The description cannot consist solely of empty spaces.", result.Message);
         Assert.Equal(HttpStatusCode.BadRequest, result.State);
     }
 
@@ -214,11 +214,30 @@ public class CategoryServiceTests
         A.CallTo(() => _categoryRepository.ExistNameCategoryAsync(category.Name, cancellationToken)).Returns(Task.FromResult<Category?>(null));
 
         // Act
-        var result = await _categoryService.UpdateCategory(1, 1, updatedFields, cancellationToken);
+        var result = await _categoryService.UpdateCategory(1, updatedFields, cancellationToken);
 
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal("A category cannot be its own parent.", result.Message);
+        Assert.Equal(HttpStatusCode.BadRequest, result.State);
+    }
+
+    [Fact]
+    public async Task UpdateCategory_ShouldReturnBadRequest_WhenParentCategoryDoesNotExist()
+    {
+        // Arrange
+        var cancellationToken = CancellationToken.None;
+        var updatedFields = new Dictionary<string, object>();
+        var category = new Category { Id = 1, Name = "Valid Name", ParentCategoryId = 99 };
+        A.CallTo(() => _categoryRepository.PatchAsync(1, updatedFields, cancellationToken)).Returns(Task.FromResult<Category?>(category));
+        A.CallTo(() => _categoryRepository.ExistCategoryById(99, cancellationToken)).Returns(Task.FromResult(false));
+
+        // Act
+        var result = await _categoryService.UpdateCategory(1, updatedFields, cancellationToken);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("The parent category does not exist.", result.Message);
         Assert.Equal(HttpStatusCode.BadRequest, result.State);
     }
 
@@ -231,10 +250,11 @@ public class CategoryServiceTests
         var category = new Category { Id = 1, Name = "ExistingName", ParentCategoryId = 2 };
         var existingCategory = new Category { Id = 2, Name = "ExistingName" };
         A.CallTo(() => _categoryRepository.PatchAsync(1, updatedFields, cancellationToken)).Returns(Task.FromResult<Category?>(category));
+        A.CallTo(() => _categoryRepository.ExistCategoryById(2, cancellationToken)).Returns(Task.FromResult(true));
         A.CallTo(() => _categoryRepository.ExistNameCategoryAsync(category.Name, cancellationToken)).Returns(Task.FromResult<Category?>(existingCategory));
 
         // Act
-        var result = await _categoryService.UpdateCategory(1, 2, updatedFields, cancellationToken);
+        var result = await _categoryService.UpdateCategory(1, updatedFields, cancellationToken);
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -250,15 +270,56 @@ public class CategoryServiceTests
         var updatedFields = new Dictionary<string, object>();
         var category = new Category { Id = 1, Name = "Valid Name", ParentCategoryId = 2 };
         A.CallTo(() => _categoryRepository.PatchAsync(1, updatedFields, cancellationToken)).Returns(Task.FromResult<Category?>(category));
+        A.CallTo(() => _categoryRepository.ExistCategoryById(2, cancellationToken)).Returns(Task.FromResult(true));
         A.CallTo(() => _categoryRepository.ExistNameCategoryAsync(category.Name, cancellationToken)).Returns(Task.FromResult<Category?>(null));
 
         // Act
-        var result = await _categoryService.UpdateCategory(1, 2, updatedFields, cancellationToken);
+        var result = await _categoryService.UpdateCategory(1, updatedFields, cancellationToken);
 
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal("Category updated successfully.", result.Message);
         Assert.Equal(category, result.Data);
         A.CallTo(() => _categoryRepository.SaveChangesAsync(cancellationToken)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UpdateCategory_ShouldUpdateAndReturnSuccess_WhenParentCategoryIsNull()
+    {
+        // Arrange
+        var cancellationToken = CancellationToken.None;
+        var updatedFields = new Dictionary<string, object>();
+        var category = new Category { Id = 1, Name = "Root Category", ParentCategoryId = null };
+        A.CallTo(() => _categoryRepository.PatchAsync(1, updatedFields, cancellationToken)).Returns(Task.FromResult<Category?>(category));
+        A.CallTo(() => _categoryRepository.ExistNameCategoryAsync(category.Name, cancellationToken)).Returns(Task.FromResult<Category?>(null));
+
+        // Act
+        var result = await _categoryService.UpdateCategory(1, updatedFields, cancellationToken);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal("Category updated successfully.", result.Message);
+        Assert.Equal(category, result.Data);
+        A.CallTo(() => _categoryRepository.SaveChangesAsync(cancellationToken)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UpdateCategory_ShouldReturnBadRequest_WhenParentIsChildCategory()
+    {
+        // Arrange
+        var cancellationToken = CancellationToken.None;
+        var updatedFields = new Dictionary<string, object>();
+        var category = new Category { Id = 1, Name = "Skincare", ParentCategoryId = 2 };
+        A.CallTo(() => _categoryRepository.PatchAsync(1, updatedFields, cancellationToken)).Returns(Task.FromResult<Category?>(category));
+        A.CallTo(() => _categoryRepository.ExistCategoryById(2, cancellationToken)).Returns(Task.FromResult(true));
+        A.CallTo(() => _categoryRepository.IsChildCategory(1, 2, cancellationToken)).Returns(Task.FromResult(true));
+
+        // Act
+        var result = await _categoryService.UpdateCategory(1, updatedFields, cancellationToken);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Cannot assign a child category as its parent category.", result.Message);
+        Assert.Equal(HttpStatusCode.BadRequest, result.State);
     }
 }

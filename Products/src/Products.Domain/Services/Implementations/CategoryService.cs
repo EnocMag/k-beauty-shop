@@ -21,7 +21,6 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Name = normalizedName,
             Description = input.Description,
             ParentCategoryId = input.ParentCategoryId
-
         };
         await categoryRepository.AddAsync(category, cancellationToken: cancellationToken);
         return Result<Category>.Ok("Category created successfully.", category);
@@ -52,8 +51,6 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
     public async Task<Result<Category>> UpdateCategory(int id, Dictionary<string, object> updatedFields, CancellationToken cancellationToken)
     {
         var category = await categoryRepository.PatchAsync(id, updatedFields, cancellationToken);
-        var nameExists = await categoryRepository.ExistNameCategoryAsync(category.Name, cancellationToken);
-
         if (category == null)
             return Result<Category>.Fail("Category not found.",
                 HttpStatusCode.NotFound);
@@ -65,17 +62,27 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
 
         if (category.Description != null &&
             category.Description.Trim() == string.Empty)
-            return Result<Category>.Fail("The description cannot consist solely of empty spaces..",
+            return Result<Category>.Fail("The description cannot consist solely of empty spaces.",
                HttpStatusCode.BadRequest);
 
-        if (category.ParentCategoryId == category.Id)
-            return Result<Category>.Fail("A category cannot be its own parent.",
-                HttpStatusCode.BadRequest);
+        if (category.ParentCategoryId.HasValue)
+        {
+            if (category.ParentCategoryId.Value == category.Id)
+                return Result<Category>.Fail("A category cannot be its own parent.",
+                    HttpStatusCode.BadRequest);
 
-        if (category.ParentCategoryId == null)
-            return Result<Category>.Fail("The parent category does not exist.",
-                HttpStatusCode.BadRequest);
+            var parentExists = await categoryRepository.ExistCategoryById(category.ParentCategoryId.Value, cancellationToken);
+            if (!parentExists)
+                return Result<Category>.Fail("The parent category does not exist.",
+                    HttpStatusCode.BadRequest);
 
+            var isChild = await categoryRepository.IsChildCategory(category.Id, category.ParentCategoryId.Value, cancellationToken);
+            if (isChild)
+                return Result<Category>.Fail("Cannot assign a child category as its parent category.",
+                    HttpStatusCode.BadRequest);
+        }
+
+        var nameExists = await categoryRepository.ExistNameCategoryAsync(category.Name, cancellationToken);
         if (category.Name == nameExists?.Name && category.Id != nameExists.Id)
             return Result<Category>.Fail("A category with the same name already exists.",
                 HttpStatusCode.BadRequest);

@@ -12,6 +12,11 @@ public interface ICategoryRepository : IBaseRepository<Category>
      int categoryId,
      CancellationToken cancellationToken);
 
+    Task<bool> IsChildCategory(
+        int parentCategoryId,
+        int childCategoryId,
+        CancellationToken cancellationToken);
+
     Task<Category?> GetCategoryWithDetails(
         int id,
         CancellationToken cancellationToken);

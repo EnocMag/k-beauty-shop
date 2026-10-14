@@ -19,7 +19,31 @@ public class CategoryRepository(ProductsDbContext context) : BaseRepository<Cate
     public async Task<bool> ExistCategoryById(int categoryId, CancellationToken cancellationToken)
     {
         return await context.Categories
-            .AnyAsync(c => c.ParentCategoryId == categoryId, cancellationToken);
+            .AnyAsync(c => c.Id == categoryId, cancellationToken);
+    }
+
+    public async Task<bool> IsChildCategory(int parentCategoryId, int childCategoryId, CancellationToken cancellationToken)
+    {
+        var currentId = (int?)childCategoryId;
+        var visited = new HashSet<int>();
+
+        while (currentId.HasValue && visited.Add(currentId.Value))
+        {
+            var parent = await context.Categories
+                .AsNoTracking()
+                .Where(c => c.Id == currentId.Value)
+                .Select(c => c.ParentCategoryId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (parent.HasValue && parent.Value == parentCategoryId)
+            {
+                return true;
+            }
+
+            currentId = parent;
+        }
+
+        return false;
     }
 
     public async Task<Category?> GetCategoryWithDetails(int id, CancellationToken cancellationToken)
