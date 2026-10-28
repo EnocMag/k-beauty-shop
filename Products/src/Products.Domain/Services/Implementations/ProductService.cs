@@ -4,10 +4,12 @@ using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
 using Products.Domain.Services.Interfaces;
+using Microsoft.Extensions.Options;
+using Products.Domain.Configuration;
 
 namespace Products.Domain.Services.Implementations;
 
-public class ProductService(IProductRepository productRepository) : IProductService
+public class ProductService(IProductRepository productRepository, IOptions<ProductImageOptions> productImageOptions) : IProductService
 {
     public async Task<Result<Product>> CreateProductAsync(CreateProductCommand input, CancellationToken cancellationToken)
     {

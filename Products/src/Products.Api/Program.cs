@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Products.Api.Behaviors;
 using Products.Domain;
 using Products.Domain.Commands.Products;
+using Products.Domain.Configuration;
 using Products.Infrastructure;
 using Products.Infrastructure.DbContexts;
 
@@ -41,6 +42,33 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddControllers();
 
+builder.Services
+    .AddOptions<SftpOptions>()
+    .Bind(builder.Configuration.GetSection(SftpOptions.SectionName))
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.Host),
+        "Sftp:Host is required.")
+    .Validate(
+        options => options.Port is >= 1 and <= 65535,
+        "Sftp:Port is invalid.")
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.Username),
+        "Sftp:Username is required.")
+     .Validate(options => !string.IsNullOrWhiteSpace(options.Password),
+        "Sftp:Password is required")
+    .ValidateOnStart();
+
+builder.Services
+    .AddOptions<ProductImageOptions>()
+    .Bind(builder.Configuration.GetSection(
+        ProductImageOptions.SectionName))
+    .Validate(
+        options => options.MaxImagesPerProduct > 0,
+        "MaxImagesPerProduct must be greater than zero.")
+    .Validate(
+        options => options.MaxFileSizeBytes > 0,
+        "MaxFileSizeBytes must be greater than zero.")
+    .ValidateOnStart();
 
 var app = builder.Build();
 app.UseCors("CORSS-APP");

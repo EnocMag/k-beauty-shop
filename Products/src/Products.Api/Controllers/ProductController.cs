@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Products.Domain.Commands.Products;
 
@@ -20,4 +20,33 @@ public class ProductController(IMediator mediator, ILogger<ProductController> lo
         input.Id = id;
         return await processCommand(input, cancellationToken);
     }
+
+    [HttpPost("{sku}/images")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadImages(
+    string sku,
+    [FromForm (Name = "images")]
+    List<IFormFile>? files,
+    CancellationToken cancellationToken)
+    {
+        var formFiles = (files != null && files.Count > 0)
+      ? files
+      : Request.Form.Files.ToList();
+
+        var imageInputs = formFiles.Select(f => new ProductImageInput(
+            Content: f.OpenReadStream(),
+            FileName: f.FileName,
+            ContentType: f.ContentType,
+            SizeBytes: f.Length
+        )).ToList();
+
+        var command = new UploadProductImagesCommand
+        {
+            ProductSku = sku,
+            Images = imageInputs
+        };
+
+        return await processCommand(command, cancellationToken);
+    }
+
 }
