@@ -9,7 +9,7 @@ using Products.Domain.Configuration;
 
 namespace Products.Domain.Services.Implementations;
 
-public class ProductService(IProductRepository productRepository, IOptions<ProductImageOptions> productImageOptions) : IProductService
+public class ProductService(IProductRepository productRepository) : IProductService
 {
     public async Task<Result<Product>> CreateProductAsync(CreateProductCommand input, CancellationToken cancellationToken)
     {
