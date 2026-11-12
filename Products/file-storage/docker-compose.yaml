@@ -34,10 +34,10 @@ services:
     restart: always
     ports:
       - "2222:22"
-    # user:pass:uid
-    command: "FtpProductCatalogManager:xv43%17FWq@:1001"
+    # user:pass:uid:gid:dir
+    command: "FtpProductCatalogManager:xv43%17FWq@:1001:1001:upload"
     volumes:
-      - ./catalog_images:/home/uploaduser/upload
+      - ./catalog_images:/home/FtpProductCatalogManager/upload
 
 volumes:
   nginx_cache:

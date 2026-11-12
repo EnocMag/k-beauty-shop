@@ -8,7 +8,6 @@ public static class DomainExtensions
 {
     public static IServiceCollection AddDomainServices(this IServiceCollection services)
     {
-        // Add domain services here
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<ICategoryService, CategoryService>();
 

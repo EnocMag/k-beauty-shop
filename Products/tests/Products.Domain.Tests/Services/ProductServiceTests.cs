@@ -1,9 +1,14 @@
 using System.Net;
 using FakeItEasy;
+using Microsoft.Extensions.Options;
 using Products.Domain.Commands.Products;
+using Products.Domain.Configuration;
+using Products.Domain.DTOs;
 using Products.Domain.Entities;
 using Products.Domain.Repositories;
 using Products.Domain.Services.Implementations;
+using Products.Domain.Services.Interfaces;
+using Products.Domain.ValueObjects;
 using System.Text.Json;
 
 namespace Products.Domain.Tests.Services;
@@ -553,5 +558,341 @@ public class ProductServiceTests
         A.CallTo(() =>
                 productRepository.SaveChangesAsync(cancellationToken))
             .MustNotHaveHappened();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task UploadProductImagesAsync_ShouldFail_WhenProductIdIsZeroOrNegative(int invalidId)
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var sftpService = A.Fake<ISftpService>();
+        var options = Options.Create(new ProductImageOptions());
+        var service = new ProductService(productRepository, sftpService, options);
+
+        var command = new UploadProductImagesCommand
+        {
+            ProductId = invalidId,
+            Images = [new ProductImageInput(new MemoryStream(), "test.jpg", "image/jpeg", 100)]
+        };
+
+        // Act
+        var result = await service.UploadProductImagesAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(HttpStatusCode.BadRequest, result.State);
+    }
+
+    [Fact]
+    public async Task UploadProductImagesAsync_ShouldFail_WhenImagesListIsEmpty()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var sftpService = A.Fake<ISftpService>();
+        var options = Options.Create(new ProductImageOptions());
+        var service = new ProductService(productRepository, sftpService, options);
+
+        var command = new UploadProductImagesCommand
+        {
+            ProductId = 1,
+            Images = Array.Empty<ProductImageInput>()
+        };
+
+        // Act
+        var result = await service.UploadProductImagesAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(HttpStatusCode.BadRequest, result.State);
+    }
+
+    [Fact]
+    public async Task UploadProductImagesAsync_ShouldFail_WhenProductNotFound()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var sftpService = A.Fake<ISftpService>();
+        var options = Options.Create(new ProductImageOptions());
+        var service = new ProductService(productRepository, sftpService, options);
+
+        A.CallTo(() => productRepository.GetByIdAsync(1, A<CancellationToken>._))
+            .Returns(Task.FromResult<Product?>(null));
+
+        var command = new UploadProductImagesCommand
+        {
+            ProductId = 1,
+            Images = [new ProductImageInput(new MemoryStream(), "test.jpg", "image/jpeg", 100)]
+        };
+
+        // Act
+        var result = await service.UploadProductImagesAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(HttpStatusCode.NotFound, result.State);
+        Assert.Equal("Product not found.", result.Message);
+    }
+
+    [Fact]
+    public async Task UploadProductImagesAsync_ShouldFail_WhenProductIsDeleted()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var sftpService = A.Fake<ISftpService>();
+        var options = Options.Create(new ProductImageOptions());
+        var service = new ProductService(productRepository, sftpService, options);
+
+        var deletedProduct = new Product
+        {
+            Id = 1,
+            Name = "Deleted Product",
+            Sku = "DEL-001",
+            IsDeleted = true
+        };
+
+        A.CallTo(() => productRepository.GetByIdAsync(1, A<CancellationToken>._))
+            .Returns(Task.FromResult<Product?>(deletedProduct));
+
+        var command = new UploadProductImagesCommand
+        {
+            ProductId = 1,
+            Images = [new ProductImageInput(new MemoryStream(), "test.jpg", "image/jpeg", 100)]
+        };
+
+        // Act
+        var result = await service.UploadProductImagesAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(HttpStatusCode.NotFound, result.State);
+        Assert.Equal("Product not found.", result.Message);
+    }
+
+    [Fact]
+    public async Task UploadProductImagesAsync_ShouldFail_WhenTotalImagesExceedMaxLimit()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var sftpService = A.Fake<ISftpService>();
+        var options = Options.Create(new ProductImageOptions { MaxImagesPerProduct = 3 });
+        var service = new ProductService(productRepository, sftpService, options);
+
+        var product = new Product
+        {
+            Id = 1,
+            Name = "Test Product",
+            Sku = "TEST-001",
+            ProductImages =
+            [
+                new ProductImage { SortOrder = 1, StorageKey = "key1", ContentType = "image/jpeg" },
+                new ProductImage { SortOrder = 2, StorageKey = "key2", ContentType = "image/jpeg" }
+            ]
+        };
+
+        A.CallTo(() => productRepository.GetByIdAsync(1, A<CancellationToken>._))
+            .Returns(Task.FromResult<Product?>(product));
+
+        var command = new UploadProductImagesCommand
+        {
+            ProductId = 1,
+            Images =
+            [
+                new ProductImageInput(new MemoryStream(), "img1.jpg", "image/jpeg", 100),
+                new ProductImageInput(new MemoryStream(), "img2.jpg", "image/jpeg", 100)
+            ]
+        };
+
+        // Act
+        var result = await service.UploadProductImagesAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(HttpStatusCode.BadRequest, result.State);
+        Assert.Contains("maximum allowed is 3", result.Message);
+    }
+
+    [Fact]
+    public async Task UploadProductImagesAsync_ShouldUploadAndPersistImages_WhenValid()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var sftpService = A.Fake<ISftpService>();
+        var options = Options.Create(new ProductImageOptions { MaxImagesPerProduct = 5 });
+        var service = new ProductService(productRepository, sftpService, options);
+
+        var product = new Product
+        {
+            Id = 10,
+            Name = "Serum",
+            Sku = "SRM-001",
+            ProductImages = null
+        };
+
+        A.CallTo(() => productRepository.GetByIdAsync(10, A<CancellationToken>._))
+            .Returns(Task.FromResult<Product?>(product));
+
+        A.CallTo(() => sftpService.UploadAsync(A<Stream>._, "Images/Products/10/img1.jpg", A<CancellationToken>._))
+            .Returns(Task.FromResult(new SftpUploadResult("Images/Products/10/img1.jpg", 1024)));
+
+        A.CallTo(() => sftpService.UploadAsync(A<Stream>._, "Images/Products/10/img2.png", A<CancellationToken>._))
+            .Returns(Task.FromResult(new SftpUploadResult("Images/Products/10/img2.png", 2048)));
+
+        var command = new UploadProductImagesCommand
+        {
+            ProductId = 10,
+            Images =
+            [
+                new ProductImageInput(new MemoryStream(), "img1.jpg", "image/jpeg", 1024),
+                new ProductImageInput(new MemoryStream(), "img2.png", "image/png", 2048)
+            ]
+        };
+
+        // Act
+        var result = await service.UploadProductImagesAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(HttpStatusCode.OK, result.State);
+        Assert.NotNull(result.Data);
+        Assert.Equal(2, result.Data.Count);
+
+        Assert.Equal(1, result.Data[0].SortOrder);
+        Assert.Equal("Images/Products/10/img1.jpg", result.Data[0].StorageKey);
+        Assert.Equal("image/jpeg", result.Data[0].ContentType);
+
+        Assert.Equal(2, result.Data[1].SortOrder);
+        Assert.Equal("Images/Products/10/img2.png", result.Data[1].StorageKey);
+        Assert.Equal("image/png", result.Data[1].ContentType);
+
+        A.CallTo(() => productRepository.Update(
+            A<Product>.That.Matches(p => p.ProductImages != null && p.ProductImages.Count == 2),
+            true,
+            A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UploadProductImagesAsync_ShouldContinueSortOrder_WhenProductAlreadyHasImages()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var sftpService = A.Fake<ISftpService>();
+        var options = Options.Create(new ProductImageOptions { MaxImagesPerProduct = 5 });
+        var service = new ProductService(productRepository, sftpService, options);
+
+        var product = new Product
+        {
+            Id = 5,
+            Name = "Cream",
+            Sku = "CRM-001",
+            ProductImages =
+            [
+                new ProductImage { SortOrder = 1, StorageKey = "key1", ContentType = "image/jpeg" }
+            ]
+        };
+
+        A.CallTo(() => productRepository.GetByIdAsync(5, A<CancellationToken>._))
+            .Returns(Task.FromResult<Product?>(product));
+
+        A.CallTo(() => sftpService.UploadAsync(A<Stream>._, "Images/Products/5/new.jpg", A<CancellationToken>._))
+            .Returns(Task.FromResult(new SftpUploadResult("Images/Products/5/new.jpg", 500)));
+
+        var command = new UploadProductImagesCommand
+        {
+            ProductId = 5,
+            Images =
+            [
+                new ProductImageInput(new MemoryStream(), "new.jpg", "image/jpeg", 500)
+            ]
+        };
+
+        // Act
+        var result = await service.UploadProductImagesAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data);
+        Assert.Equal(2, result.Data[0].SortOrder);
+        Assert.Equal(2, product.ProductImages.Count);
+    }
+
+    [Fact]
+    public async Task UploadProductImagesAsync_ShouldFail_WhenRequestContainsDuplicateFileNames()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var sftpService = A.Fake<ISftpService>();
+        var options = Options.Create(new ProductImageOptions { MaxImagesPerProduct = 5 });
+        var service = new ProductService(productRepository, sftpService, options);
+
+        var product = new Product { Id = 1, Name = "Product", Sku = "P-001" };
+        A.CallTo(() => productRepository.GetByIdAsync(1, A<CancellationToken>._))
+            .Returns(Task.FromResult<Product?>(product));
+
+        var command = new UploadProductImagesCommand
+        {
+            ProductId = 1,
+            Images =
+            [
+                new ProductImageInput(new MemoryStream(), "photo.jpg", "image/jpeg", 100),
+                new ProductImageInput(new MemoryStream(), "PHOTO.JPG", "image/jpeg", 100)
+            ]
+        };
+
+        // Act
+        var result = await service.UploadProductImagesAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(HttpStatusCode.BadRequest, result.State);
+        Assert.Contains("duplicate image file names", result.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task UploadProductImagesAsync_ShouldFail_WhenImageAlreadyExistsOnProduct()
+    {
+        // Arrange
+        var productRepository = A.Fake<IProductRepository>();
+        var sftpService = A.Fake<ISftpService>();
+        var options = Options.Create(new ProductImageOptions { MaxImagesPerProduct = 5 });
+        var service = new ProductService(productRepository, sftpService, options);
+
+        var product = new Product
+        {
+            Id = 1,
+            Name = "Product",
+            Sku = "P-001",
+            ProductImages =
+            [
+                new ProductImage
+                {
+                    SortOrder = 1,
+                    StorageKey = "Images/Products/1/banner.jpg",
+                    ContentType = "image/jpeg"
+                }
+            ]
+        };
+
+        A.CallTo(() => productRepository.GetByIdAsync(1, A<CancellationToken>._))
+            .Returns(Task.FromResult<Product?>(product));
+
+        var command = new UploadProductImagesCommand
+        {
+            ProductId = 1,
+            Images =
+            [
+                new ProductImageInput(new MemoryStream(), "BANNER.JPG", "image/jpeg", 200)
+            ]
+        };
+
+        // Act
+        var result = await service.UploadProductImagesAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(HttpStatusCode.BadRequest, result.State);
+        Assert.Contains("already associated with this product", result.Message, StringComparison.OrdinalIgnoreCase);
     }
 }
