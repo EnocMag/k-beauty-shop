@@ -62,7 +62,7 @@ public sealed class SftpService : ISftpService
             await client.UploadFileAsync(
                 content,
                 remotePath,
-                canOverride: false,
+                canOverride: true,
                 uploadProgress: null,
                 cancellationToken);
 

@@ -21,32 +21,29 @@ public class ProductController(IMediator mediator, ILogger<ProductController> lo
         return await processCommand(input, cancellationToken);
     }
 
-    [HttpPost("{sku}/images")]
+    [HttpPost("{id}/images")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadImages(
-    string sku,
-    [FromForm (Name = "images")]
-    List<IFormFile>? files,
-    CancellationToken cancellationToken)
+        int id,
+        [FromForm(Name = "images")] List<IFormFile>? files,
+        CancellationToken cancellationToken)
     {
-        var formFiles = (files != null && files.Count > 0)
-      ? files
-      : Request.Form.Files.ToList();
-
-        var imageInputs = formFiles.Select(f => new ProductImageInput(
-            Content: f.OpenReadStream(),
-            FileName: f.FileName,
-            ContentType: f.ContentType,
-            SizeBytes: f.Length
-        )).ToList();
+        var formFiles = files is { Count: > 0 } ? files : Request.Form?.Files?.ToList() ?? [];
 
         var command = new UploadProductImagesCommand
         {
-            ProductSku = sku,
-            Images = imageInputs
+            ProductId = id,
+            Images = MapToImageInputs(formFiles)
         };
 
         return await processCommand(command, cancellationToken);
     }
 
+    private static IReadOnlyList<ProductImageInput> MapToImageInputs(IEnumerable<IFormFile> files) =>
+        files.Select(f => new ProductImageInput(
+            Content: f.OpenReadStream(),
+            FileName: f.FileName,
+            ContentType: f.ContentType,
+            SizeBytes: f.Length
+        )).ToList();
 }
